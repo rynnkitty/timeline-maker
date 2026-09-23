@@ -1,8 +1,9 @@
 """영상 검증 도구 (Python 3 + OpenCV · ffmpeg 불필요) — docs/reference-spec.md 체크리스트의 측정 수단.
 
 사용:
-  python scripts/video-check.py probe  <mp4> [--expect 480x854@24:396]
-      컨테이너 검사: 해상도·fps·디코드 프레임 수·코덱·오디오 트랙 유무. --expect 가 있으면 PASS/FAIL.
+  python scripts/video-check.py probe  <mp4> [--expect 480x854@24:396] [--expect-level 30]
+      컨테이너 검사: 해상도·fps·디코드 프레임 수·코덱·오디오 트랙 유무·H.264 프로파일/레벨(avcC 와 SPS 에 실제 기록된 값).
+      --expect / --expect-level 이 있으면 PASS/FAIL.
   python scripts/video-check.py frames <mp4> <out_dir>
       기준 시각 12장(0.0/1.4/2.9/4.3/5.7/7.2/8.6/10.0/11.5/12.9/14.3/16.4s)을 PNG 로 추출.
       ⚠ 레퍼런스(ref/)에서 뽑은 프레임은 실존 궤적 → out_dir 은 docs/reference/ (gitignore) 만 쓴다.
@@ -63,6 +64,23 @@ def mp4_boxes(path):
     }
 
 
+def avc_levels(path):
+    """avcC 박스(AVCDecoderConfigurationRecord)와 그 안의 첫 SPS NAL 에서 profile_idc·level_idc 를 읽는다."""
+    data = open(path, 'rb').read()
+    i = data.find(b'avcC')
+    if i == -1:
+        return None
+    c = i + 4  # configurationVersion, AVCProfileIndication, profile_compatibility, AVCLevelIndication
+    out = {'avcC_profile': data[c + 1], 'avcC_level': data[c + 3]}
+    num_sps = data[c + 5] & 0x1F
+    if num_sps:
+        sps_len = int.from_bytes(data[c + 6:c + 8], 'big')
+        sps = data[c + 8:c + 8 + sps_len]
+        # sps[0] = NAL 헤더(0x67), 이어서 profile_idc, constraint flags, level_idc
+        out.update({'sps_nal': sps[0] & 0x1F, 'sps_profile': sps[1], 'sps_level': sps[3]})
+    return out
+
+
 def cmd_probe(a):
     meta, _ = read_all(a.mp4)
     box = mp4_boxes(a.mp4)
@@ -70,8 +88,11 @@ def cmd_probe(a):
           f"frames(decoded) {meta['frames_decoded']}  duration {meta['frames_decoded'] / meta['fps']:.3f}s")
     print(f"fourcc {meta['fourcc']}  avc1 {box['has_avc1']}  handlers {box['handlers']}  audio {box['has_audio']}  "
           f"encoder {box['encoder_tag']}")
-    if a.expect:
-        wh, rest = a.expect.split('@')
+    lv = avc_levels(a.mp4)
+    print(f"h264 {lv}")
+    if a.expect or a.expect_level is not None:
+        # --expect 없이 --expect-level 만 주면 컨테이너 항목은 실측값 자체와 비교 (= 레벨만 판정)
+        wh, rest = (a.expect or f"{meta['w']}x{meta['h']}@{meta['fps']:g}:{meta['frames_decoded']}").split('@')
         w, h = map(int, wh.split('x'))
         fps, n = rest.split(':')
         checks = {
@@ -81,6 +102,8 @@ def cmd_probe(a):
             'h264': box['has_avc1'],
             'no_audio': not box['has_audio'],
         }
+        if a.expect_level is not None:
+            checks['level'] = bool(lv) and lv.get('avcC_level') == a.expect_level and lv.get('sps_level') == a.expect_level
         for k, v in checks.items():
             print(f"  {'PASS' if v else 'FAIL'}  {k}")
         sys.exit(0 if all(checks.values()) else 1)
@@ -134,7 +157,7 @@ def cmd_timing(a):
 def main():
     p = argparse.ArgumentParser()
     sp = p.add_subparsers(dest='cmd', required=True)
-    q = sp.add_parser('probe'); q.add_argument('mp4'); q.add_argument('--expect')
+    q = sp.add_parser('probe'); q.add_argument('mp4'); q.add_argument('--expect'); q.add_argument('--expect-level', type=int)
     q = sp.add_parser('frames'); q.add_argument('mp4'); q.add_argument('out_dir')
     q = sp.add_parser('timing'); q.add_argument('mp4')
     a = p.parse_args()

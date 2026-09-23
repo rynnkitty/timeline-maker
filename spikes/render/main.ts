@@ -22,7 +22,7 @@ import {
   type TrailTheme,
 } from '../../src/engine/index.ts';
 import { createMapLayer } from '../../src/map/map-layer.ts';
-import { ensureFonts } from '../../src/ui/fonts.ts';
+import { ensureFonts } from '../../src/render/fonts.ts';
 import { parseInWorker } from '../../src/workers/parse-client.ts';
 
 const PTS: [number, number][] = [
