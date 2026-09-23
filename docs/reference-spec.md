@@ -220,3 +220,5 @@ $.userLocationProfile
 | §2.2/§2.3 아웃트로 마커 | (없음) | 아웃트로 시작 후 ≈0.17s 에 걸쳐 사라짐, 이후 미표시 | 에이전트 v1.2 |
 | §2.5 Android | — | tz 필드 위치, `rawSignals.position.LatLng` 대문자, `frequentPlaces.placeLocation` 문자열 직접, `timelineMemory`, 가변 소수 자릿수, 동일 타임스탬프 쌍 | 에이전트 v1.2 |
 | Phase 2 월 경계 | tz 필드 있으면 사용 | ISO 접미 오프셋 1차 소스 | 에이전트 v1.2 |
+| T1 압축 기준 (Phase 3) | 시간 선형 ("월당 ≈1.7s") | **누적 거리 선형** — km 카운터 초당 ≈772 km 일정, 월 10/10 일치 | `CLAUDE.md` D-24 · `docs/phase3-lookfeel.md` §1 |
+| S7 트레일 하한 (Phase 3) | 오래된 선도 옅게 남음 | **≈3 영상초 뒤 사라짐** (f070 나이 1.5 s 보임 · f103 나이 2.9 s 없음), 아웃트로에서 전 경로 복귀 | `CLAUDE.md` D-26 · `docs/phase3-lookfeel.md` §3 |
