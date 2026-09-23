@@ -12,15 +12,15 @@
 | 2 | 파서 & 정규화 (TDD) | ✅ 완료 (main `6ca5591` 머지) | 2026-09-23 |
 | 3 | 애니메이션 엔진 | ✅ 완료 (main `2d1f558` 머지) | 2026-09-23 |
 | 4 | MP4 내보내기 | ✅ 완료 (main `cacecb7` 머지) | 2026-09-23 |
-| 5 | UI/UX | ✅ 완료 (`feat/phase-5` → main 머지) | 2026-09-23 |
-| 6 | 배포 | ⬜ | |
+| 5 | UI/UX | ✅ 완료 (main `4583c76` 머지) | 2026-09-23 |
+| 6 | 배포 | 🟡 **로컬 완료** (`feat/phase-6` → main) · 원격(저장소·push·Pages)은 **사용자 `gh auth login` 대기** | |
 
 ## 다음 세션 명령
 
 ```
-timeline-maker 에이전트로 모드 A · Phase 6 (배포)을 진행하라 (D-23 위임: rynnkitty/timeline-maker 생성·push·Pages 설정 사전 승인).
-사전: 사용자가 `! gh auth login` 완료했는지 `gh auth status` 로 확인 — 미완료면 멈추고 보고.
-push 직전 H-2 점검(`npm run privacy-check`, git ls-files 에 ref/·docs/reference/·실파일 없음). README(사용법·내보내기 방법·개인정보 문구·attribution·라이선스, docs/screenshots 사용).
+(사용자) ! gh auth login   ← 브라우저 인증. 토큰을 파일·대화에 붙여 넣지 않는다 (D-21)
+timeline-maker 에이전트로 Phase 6 원격 단계를 진행하라 (D-23 사전 승인 범위: rynnkitty/timeline-maker 생성·push·Pages).
+절차는 아래 "Phase 6 원격 실행 절차" 그대로. 커밋 이메일 공개 여부(C-23)를 먼저 사용자에게 확인.
 ```
 
 ---
@@ -98,9 +98,49 @@ DoD: 15 s × 3 해상도 **396프레임·24 fps·H.264·오디오 없음·레벨
 
 DoD: 전 흐름 스크린샷(데스크톱 6 · 모바일 2) ✅ · 오류 7종 재현 ✅ · 외부 요청 = 타일 제공자뿐 · CSP 위반 0 ✅ · test/lint/build ✅
 
-## Phase 6 — 배포
+## Phase 6 — 배포 (로컬 ✅ · 원격 대기)
 
-Task 는 진입 시 에이전트 §3 을 기준으로 분해해 여기에 추가한다.
+- [x] 6-1 `README.md` (소개·URL·스크린샷·사용법·Timeline.json 내보내기(iPhone 베타)·개인정보(= `ko.privacy`)·지원 브라우저·기술·로컬 개발·attribution·라이선스)
+- [x] 6-2 `LICENSE` MIT + `public/licenses/`(MapLibre BSD-3 · Mediabunny MPL-2.0 · Noto Sans KR OFL) — D-34
+- [x] 6-3 push 직전 점검 (로컬): 추적 151개 privacy-check OK · 금지 경로 0 · **전체 이력**(커밋 33·경로 152·diff 88,363줄) 좌표 패턴 0 · 토큰(`ghp_` 등) 0 · 커밋 메시지 0
+- [x] 6-4 `deploy.yml` 점검 · 새 `npm ci` → test 83/83 → build: dist 507개 파일 **바이트 동일** (재현성)
+- [x] 6-5 `vite preview`(base `/timeline-maker/`) 전 흐름: 드롭→미리보기→내보내기→다운로드, 오류 7종, 로컬 자산 요청 106건 중 404(가려진 것 포함) 0 · CSP 위반 0
+- [ ] 6-6 **원격** — 사용자 `gh auth login` 후 아래 절차
+- [ ] 6-7 라이브 URL 검증 · README 링크 확인
+
+### Phase 6 원격 실행 절차 (인증 후 · 순서대로)
+
+```bash
+# 0) 인증·계정 확인 — 로그인 계정이 rynnkitty 인지
+gh auth status
+# (C-23 결정에 따라) 커밋 이메일을 GitHub noreply 로 바꿀지 — 바꾼다면 push 전에만 가능 (이력 재작성)
+
+# 1) 공개 저장소 생성 + origin 연결 (아직 push 하지 않음)
+gh repo create rynnkitty/timeline-maker --public   --description "구글 타임라인 파일로 이동 경로 세로 영상(MP4)을 만드는 웹사이트 — 파일은 업로드되지 않습니다"   --homepage "https://rynnkitty.github.io/timeline-maker/"   --source . --remote origin
+
+# 2) push 직전 H-2 재점검 → main 만 push (feat/* 는 로컬 이력용)
+npm run privacy-check
+git ls-files | grep -E '^ref/|^docs/reference/|[Tt]imeline[^/]*\.json$|Records\.json$|settings\.local\.json$' | grep -v '^tests/fixtures/' ; echo "위 출력이 없어야 한다"
+git push -u origin main
+#    → 첫 워크플로는 Pages 가 아직 꺼져 있어 "Setup Pages" 단계에서 실패하는 것이 정상
+
+# 3) Pages 소스 = GitHub Actions (REST: POST /repos/{owner}/{repo}/pages, build_type=workflow)
+gh api -X POST repos/rynnkitty/timeline-maker/pages -f build_type=workflow -f "source[branch]=main" -f "source[path]=/"
+#    이미 켜져 있다는 오류(409)면: gh api -X PUT repos/rynnkitty/timeline-maker/pages -f build_type=workflow
+#    API 가 막히면 수동: 저장소 Settings → Pages → Build and deployment → Source: "GitHub Actions"
+
+# 4) 워크플로 실행·확인
+gh workflow run deploy.yml --ref main
+gh run list --workflow deploy.yml --limit 3
+gh run watch "$(gh run list --workflow deploy.yml --limit 1 --json databaseId --jq '.[0].databaseId')" --exit-status
+
+# 5) 라이브 검증 (Windows curl 은 --ssl-no-revoke 필요할 수 있음)
+curl --ssl-no-revoke -sS -o /dev/null -w "%{http_code}
+" https://rynnkitty.github.io/timeline-maker/
+node -e "fetch('https://rynnkitty.github.io/timeline-maker/og.png').then(r=>console.log(r.status, r.headers.get('content-type')))"
+node spikes/ui/check-flow.ts https://rynnkitty.github.io/timeline-maker/ --no-shots
+#    기대: 흐름 성공 · httpErrors [] (Pages 는 SPA 폴백이 없어 404 가 그대로 잡힌다) · CSP 위반 0 · 외부 호스트 = CARTO 뿐
+```
 
 ---
 
@@ -133,6 +173,7 @@ Task 는 진입 시 에이전트 §3 을 기준으로 분해해 여기에 추가
 | ~~C-19~~ ✅ | 예상 소요 시간 | — | 시작 전 "약 N초" (25 ms/프레임 + 1 s) | 5 |
 | ~~C-20~~ ✅ | 내보내기 중 WebGL 컨텍스트 2개 | — | 미리보기 지도 해제 → 1개 (검증) | 5 |
 | C-21 | 가려진 탭에서 누른 취소는 다시 보일 때 반영 (abort 검사는 프레임 루프 선두, idle 대기는 보이는 시간만 셈) | 낮음 — 가려진 탭에선 버튼을 누를 수 없음 | Phase 5 UX 메모 (필요하면 idle 대기에 AbortSignal 연결) | 5 |
+| C-23 | **커밋 작성자 이메일이 회사 도메인**(`…@<회사 도메인>`, 커밋 33개 전부) — 공개 저장소에 노출됨 | 중간 — 개인정보 | 사용자 결정 필요: (a) 그대로 공개 (b) push **전에** GitHub noreply 주소로 이력 재작성 후 push. 이메일은 바꾸지 않았다 | 6 |
 | ~~C-5~~ ✅ | Phase 0 산출물 미커밋 | — | main `1d76d3b` 로 커밋 (2026-09-23) | 1 |
 | C-7 | 라벨 서체 굵기·크기·점 표기가 레퍼런스(래스터 추정)와 약간 다름 | 낮음 | 라벨 배율 k 1.35 · 대문자 경계 조정 적용(D-27). 잔여는 수용 — 필요 시 Phase 5 이후 | 5+ |
 | ~~C-8~~ ✅ | 지도 출력이 카메라 이력에 의존 | — | 내보내기 2회(새 프로필) 396/396 픽셀 동일, 탭 가림 후 재개도 동일 (Phase 4) | 4 |
@@ -149,6 +190,7 @@ Task 는 진입 시 에이전트 §3 을 기준으로 분해해 여기에 추가
 |---|---|
 | 2026-09-23 | Phase 1 종료 — O-01→D-19, O-02→D-20 사용자 확정, `feat/phase-1` → `main` 머지 |
 | 2026-09-23 | Phase 2 종료 — O-04→D-22 사용자 확정, `feat/phase-2` → `main` 머지 |
+| 2026-09-23 | Phase 6 (로컬) — README·LICENSE·D-34, 전체 이력 점검, 빌드 재현성, preview 전 흐름. 원격 절차 기록. C-23 추가 |
 | 2026-09-23 | Phase 5 — 제품 화면·CSP·OG, D-32·D-33 (O-05~O-07 확정). C-12·C-17~C-20 해소 |
 | 2026-09-23 | Phase 4 — MP4 내보내기 파이프라인(D-31), MP4 재측정으로 진행 끝 f359·마커 축소 교정, 탭 가림 대응. C-8·C-10 해소, C-18~C-21 추가 |
 | 2026-09-23 | Phase 3 — 엔진·지도 계층·미리보기 구현, 기준 프레임 6회 대조로 튜닝·판정(D-23), D-24~D-30. C-2·C-3·C-6·C-13 해소, C-15~C-17 추가 |

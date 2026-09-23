@@ -1,7 +1,7 @@
 /**
  * Phase 5 전 흐름 검증 — **합성 픽스처(가짜 좌표)만** 사용. 프로덕션 빌드(CSP 적용)를 대상으로.
  *   npx vite build && npx vite preview --port 4176
- *   node spikes/ui/check-flow.ts http://localhost:4176/timeline-maker/
+ *   node spikes/ui/check-flow.ts http://localhost:4176/timeline-maker/ [--no-shots]
  * 산출: docs/screenshots/*.png (합성 데이터 — 커밋 가능), 콘솔에 결과 JSON
  */
 import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
@@ -12,7 +12,8 @@ import puppeteer, { type ElementHandle, type Page } from 'puppeteer-core';
 const base = process.argv[2] ?? 'http://localhost:4176/timeline-maker/';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..', '..');
-const shots = join(root, 'docs', 'screenshots');
+// --no-shots: 라이브 URL 검증 등 — 커밋된 스크린샷을 덮어쓰지 않고 spikes/ui/out/shots 로
+const shots = process.argv.includes('--no-shots') ? join(here, 'out', 'shots') : join(root, 'docs', 'screenshots');
 const dl = join(here, 'out', 'dl');
 mkdirSync(shots, { recursive: true });
 rmSync(dl, { recursive: true, force: true });
@@ -27,6 +28,7 @@ const browser = await puppeteer.launch({
 const hosts: Record<string, number> = {};
 const csp: string[] = [];
 const pageErrors: string[] = [];
+const httpErrors: string[] = [];
 const result: Record<string, unknown> = {};
 
 async function open(opts: { width: number; height: number; mobile?: boolean; noWebCodecs?: boolean }): Promise<Page> {
@@ -46,6 +48,13 @@ async function open(opts: { width: number; height: number; mobile?: boolean; noW
     hosts[h] = (hosts[h] ?? 0) + 1;
   });
   page.on('pageerror', (e) => pageErrors.push(String((e as Error).message)));
+  page.on('response', (r) => {
+    if (r.status() >= 400) httpErrors.push(`${r.status()} ${new URL(r.url()).pathname}`);
+    // vite preview 는 없는 경로에 index.html 을 200 으로 준다 → 자산 요청에 HTML 이 오면 가려진 404 (Pages 에서는 진짜 404)
+    const u = new URL(r.url());
+    if (u.host === new URL(base).host && !u.pathname.endsWith('/') && (r.headers()['content-type'] ?? '').includes('text/html'))
+      httpErrors.push(`masked-404 ${u.pathname}`);
+  });
   page.on('console', (m) => {
     if (/Content Security Policy|Refused to/i.test(m.text())) csp.push(m.text().slice(0, 200));
   });
@@ -194,6 +203,8 @@ try {
   result.hosts = hosts;
   result.cspViolations = csp;
   result.pageErrors = pageErrors;
+  result.httpErrors = httpErrors;
+  result.localAssetRequests = hosts[new URL(base).host];
   console.log(JSON.stringify(result, null, 2));
 } finally {
   await browser.close();
