@@ -3,14 +3,14 @@
  * 로직은 전부 src/data (vitest 로 검증). 이 파일은 메시지 배관만 — 브라우저에서만 검증된다.
  * H-1: 네트워크 요청 없음 · 좌표를 로그로 남기지 않는다.
  */
-import { ParseError, parseTimeline } from '../data/index.ts';
+import { ParseError, packTrack, packedBuffers, parseTimeline } from '../data/index.ts';
 import type { ParseOutcome, ParseRequest } from './protocol.ts';
 import { checkDecodedText } from './read-guard.ts';
 
 // tsconfig 는 DOM lib 기준이라 워커 전역을 최소 형태로 좁혀 쓴다
 const ctx = self as unknown as {
   onmessage: ((e: MessageEvent<ParseRequest>) => void) | null;
-  postMessage(msg: ParseOutcome): void;
+  postMessage(msg: ParseOutcome, transfer?: Transferable[]): void;
 };
 
 ctx.onmessage = async (e) => {
@@ -24,9 +24,14 @@ ctx.onmessage = async (e) => {
       ctx.postMessage({ ok: false, code: tooLarge });
       return;
     }
-    const result = parseTimeline(text);
+    const r = parseTimeline(text);
+    const track = packTrack(r.points);
     const t2 = performance.now();
-    outcome = { ok: true, result, timings: { readMs: t1 - t0, parseMs: t2 - t1 } };
+    ctx.postMessage(
+      { ok: true, result: { format: r.format, totalKm: r.totalKm, stats: r.stats, track }, timings: { readMs: t1 - t0, parseMs: t2 - t1 } },
+      packedBuffers(track), // transfer — 복사 없음 (C-13)
+    );
+    return;
   } catch (err) {
     outcome = { ok: false, code: err instanceof ParseError ? err.code : 'WORKER_FAILED' };
   }

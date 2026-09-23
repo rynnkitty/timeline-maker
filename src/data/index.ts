@@ -9,3 +9,4 @@ export { SPEED_LIMIT_KMH, cleanTrack } from './clean.ts';
 export { EARTH_RADIUS_KM, cumulativeKm, haversineKm } from './distance.ts';
 export { countByLocalMonth, filterByLocalDate, localDateKey, localMonthKey } from './period.ts';
 export { parseTimeline } from './parse.ts';
+export { packTrack, packedBuffers, unpackTrack, type PackedTrack } from './packed.ts';
