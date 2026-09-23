@@ -99,6 +99,11 @@ exportBtn.addEventListener('click', async () => {
   progress.hidden = false;
   progress.value = 0;
   const scene = sceneFor(r.width, r.height);
+  // 가려진 탭에서는 지도 렌더(rAF)가 멈춘다 — 안내만 하고 돌아오면 이어서 진행 (C-18)
+  const onVisibility = () => {
+    if (document.visibilityState === 'hidden') status.textContent = ko.export.hidden;
+  };
+  document.addEventListener('visibilitychange', onVisibility);
   try {
     const out = await exportMp4({
       scene,
@@ -115,6 +120,7 @@ exportBtn.addEventListener('click', async () => {
     else if (e instanceof ExportError) status.textContent = ko.export.errors[e.code];
     else status.textContent = ko.export.errors.ENCODE_FAILED;
   } finally {
+    document.removeEventListener('visibilitychange', onVisibility);
     abort = null;
     exportBtn.disabled = false;
     cancelBtn.hidden = true;

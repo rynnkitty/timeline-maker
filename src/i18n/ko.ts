@@ -31,6 +31,7 @@ export const ko = {
     progress: (frame: number, frames: number, etaS: number) => `영상 만드는 중… ${frame} / ${frames} 프레임 · 약 ${etaS}초 남음`,
     done: (mb: string, s: string) => `완료 — ${mb} MB, ${s}초 걸렸습니다. 다운로드를 시작합니다.`,
     canceled: '영상 만들기를 취소했습니다.',
+    hidden: '이 탭이 화면에 보이는 동안만 영상이 만들어집니다. 탭으로 돌아오면 이어서 진행합니다.',
     errors: {
       INSECURE_CONTEXT: '보안 연결(HTTPS)에서만 영상을 만들 수 있습니다.',
       NO_WEBCODECS: '이 브라우저는 영상 만들기를 지원하지 않습니다. 데스크톱 Chrome 또는 Edge 를 사용해 주세요.',
