@@ -8,6 +8,8 @@ export type ProviderId = 'carto' | 'openfreemap';
 
 export type TileProvider = {
   id: ProviderId;
+  /** 사용자 안내에 쓰는 이름 (H-5 문구) */
+  label: string;
   styleUrl: string;
   /** 프레임에 굽는 attribution (H-3) */
   attribution: string;
@@ -53,6 +55,7 @@ function cityLabelsLikeReference(style: StyleSpecification): StyleSpecification 
 export const PROVIDERS: Record<ProviderId, TileProvider> = {
   carto: {
     id: 'carto',
+    label: 'CARTO',
     styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
     attribution: '© OpenStreetMap contributors © CARTO',
     // CARTO Positron 은 z≥13 에서 한글 `name` 으로 바뀌고 글리프 서버에 한글이 없다 → 전 줌 name_en 우선
@@ -61,6 +64,7 @@ export const PROVIDERS: Record<ProviderId, TileProvider> = {
   },
   openfreemap: {
     id: 'openfreemap',
+    label: 'OpenFreeMap',
     styleUrl: 'https://tiles.openfreemap.org/styles/positron',
     attribution: '© OpenStreetMap contributors © OpenMapTiles © OpenFreeMap',
     transform: (s) => {

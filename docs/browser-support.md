@@ -125,3 +125,20 @@
 ### 5.4 레벨 정정 (C-10)
 
 §1.1 의 "Mediabunny 자동 선택 L2.2" 는 **요청한 코덱 문자열**이었다. 실제 비트스트림(avcC·SPS)을 읽어 보니 자동 선택으로 만든 Phase 1 파일에도 **레벨 3.0** 이 기록돼 있었다 — Chrome 인코더가 레벨을 바로잡는다. 레퍼런스 영상도 High·L3.0. 제품은 레벨 표로 계산한 문자열을 명시해 요청과 결과를 일치시킨다.
+
+## 6. 제품 화면 · CSP (Phase 5 · 프로덕션 빌드)
+
+> 재현: `npm run build && npx vite preview --port 4176` → `node spikes/ui/check-flow.ts http://localhost:4176/timeline-maker/` (합성 픽스처만, 스크린샷 `docs/screenshots/`).
+> Chrome 153 · CSP 메타 태그 적용 상태 (`vite.config.ts` cspPlugin, 빌드에만 주입).
+
+| 검사 | 결과 |
+|---|---|
+| 전 흐름: 파일 선택 → 미리보기 → 테마·길이 변경 → 내보내기(진행률·실시간 프레임) → 자동 다운로드 · "다시 받기" | ✅ 480 · 15 s 약 9 s, `2026년 나의 타임라인_480x854.mp4` |
+| CSP 위반 (`securitypolicyviolation` · 콘솔 "Refused to") | **0건** (워커 2종 · 폰트 · 이미지 · 타일 · 다운로드 모두) |
+| 페이지 오류 | 0건 |
+| 요청 호스트 | `localhost`(자체 자산) · `data:` · CARTO(`basemaps` · `tiles(-a..d)`) — **그 외 0건** |
+| 내보내는 동안 살아 있는 지도 인스턴스 | 1개 (미리보기 지도 해제 — C-20) |
+| 오류 안내 재현 | `LEGACY_TAKEOUT` · `NOT_JSON` · `NO_DATA` · `EMPTY_FILE` · `FILE_TOO_LARGE`(읽기 전 차단) · 기간 내 데이터 없음 · `NO_WEBCODECS`(VideoEncoder 제거) — 7종 모두 문구 표시 |
+| 200 MB 이상 파일 | 확인 문구 → "그만두기" 로 취소 |
+| iOS 파일 | 베타 안내 표시 |
+| 모바일 폭 390 px | 가로 스크롤 없음, 프레임 → 조작부 순서 |

@@ -3,7 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- CSP 는 프로덕션 빌드에서만 주입 (vite.config.ts cspPlugin — H-1) -->
     <title>타임라인 메이커</title>
+    <meta name="description" content="구글 지도 타임라인 파일로 한 해의 이동을 세로 영상(MP4)으로 만듭니다. 파일은 업로드되지 않고 브라우저 안에서만 처리됩니다." />
+    <meta name="theme-color" content="#eef0ec" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:title" content="타임라인 메이커" />
+    <meta property="og:description" content="구글 지도 타임라인 파일로 한 해 동안 움직인 길을 세로 영상으로 만듭니다. 파일은 업로드되지 않습니다." />
+    <meta property="og:url" content="https://rynnkitty.github.io/timeline-maker/" />
+    <meta property="og:image" content="https://rynnkitty.github.io/timeline-maker/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="예시 데이터로 만든 이동 경로 영상 한 장면" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="app"></div>

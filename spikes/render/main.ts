@@ -87,6 +87,7 @@ type RefOpts = {
   hud?: Partial<HudLayout>;
   labelScale?: number;
   provider?: 'carto' | 'openfreemap';
+  name?: string;
 };
 
 const REF_FRAMES = [0, 34, 70, 103, 137, 173, 206, 240, 276, 310, 343, 394];
@@ -104,7 +105,7 @@ async function renderRef(o: RefOpts = {}) {
     animS: o.animS ?? 15,
     width: W,
     height: H,
-    name: '테스트', // 플레이스홀더 — 실명 금지 (H-2)
+    name: o.name ?? '테스트', // 플레이스홀더 — 실명 금지 (H-2)
     camera: { ...DEFAULT_CAMERA, ...o.camera },
     theme: { ...GREEN, ...o.theme },
     hud: { ...HUD, ...o.hud },
@@ -132,5 +133,75 @@ async function renderRef(o: RefOpts = {}) {
   return { points: track.n, results };
 }
 
-(window as unknown as { spike: unknown }).spike = { projection, renderRef, ready: true };
+/**
+ * OG 이미지 1200×630 — **합성 픽스처로 렌더한 프레임만** 쓴다 (실데이터·레퍼런스 프레임 금지).
+ * 왼쪽 글, 오른쪽 9:16 프레임.
+ */
+async function ogImage(o: { frame?: number; name?: string } = {}) {
+  const f = document.querySelector<HTMLInputElement>('#file')!.files?.[0];
+  if (!f) throw new Error('no file');
+  const parsed = await parseInWorker(f);
+  if (!parsed.ok) return { error: parsed.code };
+  const track = makeTrack(parsed.result.track);
+  const scene = buildScene(track, {
+    animS: 15,
+    width: 480,
+    height: 854,
+    name: o.name ?? '나',
+    camera: DEFAULT_CAMERA,
+    theme: GREEN,
+    hud: HUD,
+  });
+  const map = await createMapLayer(480, 854);
+  const title = '타임라인 메이커';
+  const lines = ['구글 지도 타임라인 파일로', '한 해 동안 움직인 길을', '세로 영상으로 만듭니다.'];
+  await ensureFonts([scene.title, computeFrame(scene, o.frame ?? 394).subtitle, map.attribution, title, ...lines]);
+  const fc = document.createElement('canvas');
+  fc.width = 480;
+  fc.height = 854;
+  const fctx = fc.getContext('2d')!;
+  for (let i = 0; i <= (o.frame ?? 394); i += 12) await renderFrame(fctx, scene, map, i); // 순차 (D-28)
+  await renderFrame(fctx, scene, map, o.frame ?? 394);
+  map.destroy();
+  const og = document.createElement('canvas');
+  og.width = 1200;
+  og.height = 630;
+  const c = og.getContext('2d')!;
+  c.fillStyle = '#eef0ec';
+  c.fillRect(0, 0, 1200, 630);
+  const fh = 560;
+  const fw = Math.round((fh * 480) / 854);
+  const fx = 1200 - 80 - fw;
+  const fy = 35;
+  c.save();
+  c.shadowColor = 'rgba(28,33,30,0.28)';
+  c.shadowBlur = 36;
+  c.shadowOffsetY = 14;
+  c.beginPath();
+  c.roundRect(fx, fy, fw, fh, 22);
+  c.fillStyle = '#fafaf8';
+  c.fill();
+  c.restore();
+  c.save();
+  c.beginPath();
+  c.roundRect(fx, fy, fw, fh, 22);
+  c.clip();
+  c.drawImage(fc, fx, fy, fw, fh);
+  c.restore();
+  c.fillStyle = '#1e7645';
+  c.font = '700 30px "Noto Sans KR"';
+  c.fillText(title, 90, 200);
+  c.fillStyle = '#1c211e';
+  c.font = '700 44px "Noto Sans KR"';
+  lines.forEach((l, i) => c.fillText(l, 90, 290 + i * 64));
+  const frameOut = await pngBase64(fc);
+  return {
+    results: [
+      { label: 'og', ext: 'png', base64: await pngBase64(og) },
+      { label: 'frame', ext: 'png', base64: frameOut },
+    ],
+  };
+}
+
+(window as unknown as { spike: unknown }).spike = { projection, renderRef, ogImage, ready: true };
 document.querySelector('#log')!.textContent = 'ready';
