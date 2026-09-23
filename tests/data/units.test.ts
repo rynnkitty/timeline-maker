@@ -67,7 +67,12 @@ describe('period', () => {
     expect(localMonthKey(b)).toBe('2026-02');
   });
   it('filterByLocalDate 는 [from, to] 양끝 포함', () => {
-    const pts = ['2026-01-31T23:59:00.000+09:00', '2026-02-01T00:00:00.000+09:00', '2026-02-28T23:59:59.000+09:00', '2026-03-01T00:00:00.000+09:00'].map(p);
+    const pts = [
+      '2026-01-31T23:59:00.000+09:00',
+      '2026-02-01T00:00:00.000+09:00',
+      '2026-02-28T23:59:59.000+09:00',
+      '2026-03-01T00:00:00.000+09:00',
+    ].map(p);
     expect(filterByLocalDate(pts, '2026-02-01', '2026-02-28').length).toBe(2);
     expect(filterByLocalDate(pts, undefined, '2026-01-31').length).toBe(1);
     expect(filterByLocalDate(pts, '2026-03-01', undefined).length).toBe(1);

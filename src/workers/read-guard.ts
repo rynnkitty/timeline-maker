@@ -1,0 +1,10 @@
+/**
+ * V8 의 문자열 최대 길이 (64-bit: 2^29 − 24 자). 이를 넘는 파일은 한 번에 문자열로 읽을 수 없다.
+ * Chrome 153 실측: 600MB 파일의 `File.text()` 는 예외 없이 "" 를 돌려준다 (docs/browser-support.md §4).
+ */
+export const MAX_TEXT_CHARS = 2 ** 29 - 24;
+
+/** 파일 크기는 있는데 디코딩 결과가 비었다 = 문자열 한계 초과. 0바이트 파일은 파서가 EMPTY_FILE 로 처리 */
+export function checkDecodedText(fileBytes: number, text: string): 'FILE_TOO_LARGE' | null {
+  return fileBytes > 0 && text.length === 0 ? 'FILE_TOO_LARGE' : null;
+}
