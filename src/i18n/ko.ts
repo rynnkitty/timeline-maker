@@ -15,12 +15,16 @@ export const ko = {
   intro: '구글 지도 타임라인에서 내보낸 파일로 한 해 동안 움직인 길을 세로 영상으로 만듭니다.',
   step: { file: '파일', options: '영상 설정', make: '만들기' },
   file: {
-    choose: 'Timeline.json 선택',
+    choose: '타임라인 파일 선택',
     change: '다른 파일 선택',
-    drop: 'Timeline.json 을 여기에 끌어 놓거나',
+    drop: '타임라인 파일(.json)을 여기에 끌어 놓거나',
     dropButton: '파일 선택',
     dropActive: '놓으면 읽기 시작합니다',
-    howTo: "휴대폰 Google 지도 앱의 타임라인 설정에서 '타임라인 데이터 내보내기'를 하면 Timeline.json 을 받을 수 있습니다.",
+    /** Google 도움말 기준 (support.google.com/maps/answer/6258979, 2026-09-23 확인) */
+    howTo: [
+      "Android: 휴대폰 설정 → 위치 → 위치 서비스 → 타임라인 → '타임라인 데이터 내보내기' (파일 이름 Timeline.json)",
+      "iPhone: Google 지도 앱 → 프로필 → 설정 → 개인 콘텐츠 → '타임라인 데이터 내보내기' (파일 이름 location-history.json)",
+    ],
     loading: '파일을 읽는 중입니다…',
     preparing: '지도를 준비하는 중입니다…',
     summary: (points: number, from: string, to: string) => `${from}부터 ${to}까지 ${n(points)}개 지점을 읽었습니다.`,
@@ -55,11 +59,12 @@ export const ko = {
     empty: '파일을 고르면 여기에서 미리 볼 수 있습니다.',
   },
   errors: {
-    EMPTY_FILE: '빈 파일입니다. 내보낸 Timeline.json 을 다시 선택해 주세요.',
-    NOT_JSON: 'JSON 파일이 아니거나 파일이 손상되었습니다. 내보낸 Timeline.json 을 선택해 주세요.',
+    EMPTY_FILE: '빈 파일입니다. 휴대폰에서 내보낸 타임라인 파일을 다시 선택해 주세요.',
+    NOT_JSON: 'JSON 파일이 아니거나 파일이 손상되었습니다. 휴대폰에서 내보낸 타임라인 파일을 선택해 주세요.',
     LEGACY_TAKEOUT:
-      '예전 Google 테이크아웃 형식(Records.json · Semantic Location History)은 지원하지 않습니다. 휴대폰의 Google 지도 앱에서 내보낸 Timeline.json 을 올려 주세요.',
-    UNKNOWN_FORMAT: '타임라인 파일 형식을 알아볼 수 없습니다. 휴대폰의 Google 지도 앱에서 내보낸 Timeline.json 인지 확인해 주세요.',
+      '예전 Google 테이크아웃 형식(Records.json · Semantic Location History)은 지원하지 않습니다. 휴대폰에서 내보낸 타임라인 파일(Timeline.json 또는 location-history.json)을 올려 주세요.',
+    UNKNOWN_FORMAT:
+      '타임라인 파일 형식을 알아볼 수 없습니다. 휴대폰에서 내보낸 Timeline.json 또는 location-history.json 인지 확인해 주세요.',
     NO_DATA: '이 파일에는 이동 경로 기록이 없습니다.',
     FILE_TOO_LARGE: '파일이 너무 커서 브라우저에서 읽을 수 없습니다. 약 500 MB 까지 지원합니다.',
     NO_DATA_IN_PERIOD: '선택한 기간에는 이동 경로 기록이 없습니다. 기간을 넓혀 보세요.',
