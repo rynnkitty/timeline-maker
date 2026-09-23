@@ -20,9 +20,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
----
-
-This license covers the source code of this repository only.
-Third-party components keep their own licenses — see README.md ("라이선스") and
-public/licenses/ (MapLibre GL JS: BSD-3-Clause, Mediabunny: MPL-2.0,
-Noto Sans KR: SIL Open Font License 1.1). Map data © OpenStreetMap contributors (ODbL).

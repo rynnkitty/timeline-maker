@@ -79,7 +79,7 @@ export function mountApp(root: HTMLElement): void {
     fileSummary,
     iosNote,
     fileError,
-    el('p', { className: 'hint', textContent: ko.file.howTo }),
+    ...ko.file.howTo.map((t) => el('p', { className: 'hint', textContent: t })),
   );
 
   // ─── 2 영상 설정 ───
