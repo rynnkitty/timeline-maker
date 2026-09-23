@@ -1,0 +1,7 @@
+dist/
+node_modules/
+package-lock.json
+tests/fixtures/
+docs/reference/
+ref/
+*.md
