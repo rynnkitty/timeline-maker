@@ -1,0 +1,38 @@
+{
+  "name": "timeline-maker",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Google Timeline.json → 이동 경로 애니메이션 MP4 (100% 브라우저)",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "fixtures": "node scripts/make-fixtures.ts",
+    "privacy-check": "node scripts/privacy-check.ts --all",
+    "prepare": "git config core.hooksPath .githooks || true"
+  },
+  "dependencies": {
+    "maplibre-gl": "6.11.0",
+    "mediabunny": "1.59.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.19.1",
+    "eslint": "10.11.0",
+    "prettier": "3.9.9",
+    "puppeteer-core": "25.11.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  }
+}

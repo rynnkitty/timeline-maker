@@ -1,0 +1,51 @@
+# GitHub Pages 배포 (D-08). main 에 push 되면 빌드 → Pages 배포.
+# 액션은 커밋 SHA 로 고정 — 태그는 2026-09-23 GitHub API 로 대조 확인.
+# 기준 예시: https://vite.dev/guide/static-deploy#github-pages
+# ⚠ push·저장소 생성·Pages 설정은 사용자 승인 후 (H-7, Phase 6).
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22 # scripts/*.ts 가 Node ≥ 22.18 타입 스트리핑을 사용
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Privacy check (H-2)
+        run: npm run privacy-check
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Setup Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ./dist
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -7,8 +7,8 @@
 
 | Phase | 이름 | 상태 | 완료일 |
 |---|---|---|---|
-| 0 | 사양 고정 & 스키마 확인 | ✅ 완료 (커밋은 Phase 1 `git init` 후) | 2026-09-23 |
-| 1 | 스캐폴딩 + 기술 스파이크 | ⏭ 다음 | |
+| 0 | 사양 고정 & 스키마 확인 | ✅ 완료 (main `1d76d3b`) | 2026-09-23 |
+| 1 | 스캐폴딩 + 기술 스파이크 | ✅ 완료 2026-09-23 — O-01→D-19 · O-02→D-20 확정, `main` 머지 | |
 | 2 | 파서 & 정규화 (TDD) | ⬜ | |
 | 3 | 애니메이션 엔진 | ⬜ | |
 | 4 | MP4 내보내기 | ⬜ | |
@@ -18,9 +18,7 @@
 ## 다음 세션 명령
 
 ```
-timeline-maker 에이전트로 모드 A · Phase 1 (스캐폴딩 + 기술 스파이크)을 진행하라.
-먼저 docs/ROADMAP.md 의 "미해결·Carry-over" 와 "질문" 을 확인하고, Phase 0 산출물을 첫 커밋에 포함하라
-(git init 직후 H-2 점검: git status 에 ref/·docs/reference/·Timeline*.json 이 보이지 않아야 한다).
+timeline-maker 에이전트로 모드 A · Phase 2 (파서 & 정규화, TDD)를 진행하라. 오라클은 tests/fixtures/expected.json, 결정은 D-16~D-18.
 ```
 
 ---
@@ -41,13 +39,15 @@ DoD: reference-spec 완성 ✅ · §2.5 실파일 일치 확인(수정 반영) �
 
 ## Phase 1 — 스캐폴딩 + 기술 스파이크
 
-- [ ] 1-1 `git init` · `.gitignore` 재확인(`git status` 로 ref/·docs/reference/ 미표시 확인) · Phase 0 산출물 첫 커밋
-- [ ] 1-2 Vite + TS · Vitest · ESLint/Prettier(최소) · `npm run dev/build/test`
-- [ ] 1-3 `package.json` scripts 에 `fixtures: node scripts/make-fixtures.ts` 등록 (Node ≥22.18 `engines` 명시)
-- [ ] 1-4 `.github/workflows/deploy.yml` (actions major 버전 공식 문서 확인 — H-4)
-- [ ] 1-5 스파이크 A (지도): CARTO 벡터 Positron vs OpenFreeMap Positron — 1080×1920 오프스크린, 타일 로딩 대기, 캡처 방식(`preserveDrawingBuffer` vs render 이벤트), CORS·약관·라벨·톤 비교 → `spikes/map/`
-- [ ] 1-6 스파이크 B (인코딩): Mediabunny H.264 2초 → `python scripts/video-check.py probe <out> --expect 480x854@24:48` → `docs/browser-support.md`
-- [ ] 1-7 O-01 · O-02 확정 요청 → `CLAUDE.md` §3
+- [x] 1-1 `git init -b main` · `git status --ignored` 로 ref/·docs/reference/ ignored 확인 · Phase 0 첫 커밋 `1d76d3b` · H-2 자동화(`scripts/privacy-check.ts` + `.githooks/pre-commit` + `npm run privacy-check`, 음성 테스트로 차단 확인)
+- [x] 1-2 Vite 8.3.0 + TS 6.0.3(7.x 는 typescript-eslint 미지원) · Vitest 5.0.1 · ESLint 10 + typescript-eslint · Prettier — `npm run dev/build/test/typecheck/lint` 통과
+- [x] 1-3 scripts `fixtures`·`privacy-check`·`prepare`(hooksPath) · `engines.node >=22.18`
+- [x] 1-4 `.github/workflows/deploy.yml` — SHA 고정(checkout v7.0.1 · setup-node v7.0.0 · configure-pages v6.0.0 · upload-pages-artifact v5.0.0 · deploy-pages v5.0.1, GitHub API 대조), Node 22 (push 없음)
+- [x] 1-5 스파이크 A → `spikes/map/` · `docs/spike-results.md` §1 (제공자 비교표·캡처 방식·결정론·워커 로딩 해결)
+- [x] 1-6 스파이크 B → `spikes/encode/` · `docs/browser-support.md` (Chrome·Edge·headless·빌드 5/5 PASS)
+- [x] 1-7 **O-01 · O-02 사용자 확정** (D-19 · D-20) → `CLAUDE.md` §3 (권장안 `docs/spike-results.md` §4)
+
+DoD: dev·build·test 통과 ✅ · 스파이크 A/B 산출물과 비교표 ✅ · 스파이크 코드 `spikes/` 격리 ✅ · **O-01·O-02 확정 ✅**
 
 ## Phase 2 — 파서 & 정규화 (TDD)
 
@@ -83,7 +83,12 @@ Task 는 각 Phase 진입 시 에이전트 §3 을 기준으로 분해해 여기
 | C-2 | 카메라 t=0 광역 줌의 원인 불명 (줌 상한 클램프 vs 선행/첫 창) | 중간 — 초반 몇 초의 룩앤필 | reference-spec K1 — 두 가설로 렌더해 f000·f034 와 대조 | 3 |
 | C-3 | 트레일 팔레트(S7·S8) 재측정 안 함 | 낮음 | Phase 3 튜닝 시 기준 프레임에서 재측정 | 3 |
 | C-4 | 브라우저 메모리 (Node 대리 지표만 있음: parse 125ms · heap +102MB) | 중간 — 수년치 파일 | Phase 2 에서 Worker 실측 → O-04 확정. rawSignals 는 파싱 직후 참조 해제 | 2 |
-| C-5 | Phase 0 산출물 미커밋 (git 미초기화) | 낮음 | Phase 1-1 에서 첫 커밋. 커밋 전 H-2 점검 | 1 |
+| ~~C-5~~ ✅ | Phase 0 산출물 미커밋 | — | main `1d76d3b` 로 커밋 (2026-09-23) | 1 |
+| C-7 | 레퍼런스 라벨이 CARTO GL 기본보다 ≈1.35배 크고 대도시 대문자 (래스터 추정) | 중간 — 룩앤필 | 컨테이너 축소 + `pixelRatio` 확대, 필요 시 text-size/transform 오버라이드 — 기준 프레임 대조 튜닝 (`docs/spike-results.md` §1.6) | 3 |
+| C-8 | 지도 출력이 카메라 이력에 의존 (다른 뷰 경유 시 z7.7 에서 ≈1.4% 픽셀 차) — 미리보기 스크럽과 내보내기의 라벨 배치가 다를 수 있음 | 중간 — H-6 해석 | 내보내기는 새 인스턴스·프레임 0 부터 순차(재생 16/16 동일 확인). 미리보기 차이는 허용할지 Phase 3 에서 판단 | 3 · 4 |
+| C-9 | Firefox·Safari·모바일 인코딩/메모리 미검증 (장비 없음) | 중간 | O-02 결정에 따라 기능 감지 안내. 가능하면 실기기 확인 | 4 · 5 |
+| C-10 | 480×854 자동 H.264 레벨 L2.2 (규격 미달) | 낮음 | Phase 4 에서 `fullCodecString: 'avc1.64001e'` 명시 (검증 완료) | 4 |
+| C-11 | 지도 번들 크기 (map 청크 1.0 MB / gzip 276 kB + 워커 510 kB) | 낮음 | Phase 5 코드 분할·지연 로딩 | 5 |
 | C-6 | 아웃트로 중 마커 소멸 방식(페이드 vs 축소) 미판별 | 낮음 | 코어 면적 감소만 확인(f361~f364). Phase 3 에서 페이드로 구현 후 대조 | 3 |
 
 ---
@@ -92,5 +97,7 @@ Task 는 각 Phase 진입 시 에이전트 §3 을 기준으로 분해해 여기
 
 | 일자 | 변경 |
 |---|---|
+| 2026-09-23 | Phase 1 종료 — O-01→D-19, O-02→D-20 사용자 확정, `feat/phase-1` → `main` 머지 |
+| 2026-09-23 | Phase 1 — 스캐폴딩·워크플로·스파이크 A/B 완료, O-01·O-02 확정 대기. Carry-over C-5 해소, C-7~C-11 추가 |
 | 2026-09-23 | Q1~Q4 사용자 결정 — 전부 (a) 채택, `CLAUDE.md` v1.2 (D-16~D-18 · H-2) 반영 |
 | 2026-09-23 | 생성 — Phase 0 완료 기록, Phase 1~2 Task, 질문 Q1~Q3, Carry-over C-1~C-6 |

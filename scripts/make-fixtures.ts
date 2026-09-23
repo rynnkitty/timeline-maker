@@ -454,7 +454,7 @@ function weekend(r: Rng, it: It, w: World, y: number, mo: number, d: number) {
 
 type Trip = (r: Rng, it: It, w: World, y: number, mo: number, d: number) => { days: number; memory?: { start: number; end: number; dests: Place[]; km: number } };
 const trips: Record<string, Trip> = {
-  busanKtx: (r, it, w, y, mo, d) => {
+  busanKtx: (_r, it, w, y, mo, d) => {
     const t0 = it.now();
     it.stayUntil(at(y, mo, d, 8, 30));
     it.move(w.hub.seoulStation, 'IN_SUBWAY');
@@ -470,7 +470,7 @@ const trips: Record<string, Trip> = {
     it.move(w.home, 'IN_SUBWAY');
     return { days: 2, memory: { start: t0, end: it.now(), dests: [w.hub.haeundae], km: 325 } };
   },
-  gangneungCar: (r, it, w, y, mo, d) => {
+  gangneungCar: (_r, it, w, y, mo, d) => {
     const t0 = it.now();
     it.stayUntil(at(y, mo, d, 9, 0));
     it.move(w.hub.gangneung, 'IN_PASSENGER_VEHICLE');
@@ -481,7 +481,7 @@ const trips: Record<string, Trip> = {
     return { days: 2, memory: { start: t0, end: it.now(), dests: [w.hub.gangneung, w.hub.gyeongpo], km: 165 } };
   },
   /** 정당한 장거리 고속 이동 — 속도 필터가 지우면 안 된다 (Phase 2 계약) */
-  jejuFlight: (r, it, w, y, mo, d) => {
+  jejuFlight: (_r, it, w, y, mo, d) => {
     const t0 = it.now();
     it.stayUntil(at(y, mo, d, 7, 30));
     it.move(w.hub.gimpo, 'IN_PASSENGER_VEHICLE');
@@ -501,7 +501,7 @@ const trips: Record<string, Trip> = {
     it.move(w.home, 'IN_PASSENGER_VEHICLE');
     return { days: 3, memory: { start: t0, end: it.now(), dests: [w.hub.seogwipo, w.hub.seongsan], km: 450 } };
   },
-  daeguDay: (r, it, w, y, mo, d) => {
+  daeguDay: (_r, it, w, y, mo, d) => {
     it.stayUntil(at(y, mo, d, 7, 40));
     it.move(w.hub.seoulStation, 'IN_SUBWAY');
     it.stayFor(15);
