@@ -10,6 +10,10 @@ describe('checkDecodedText', () => {
   it('0바이트 파일은 파서에 맡긴다 (EMPTY_FILE)', () => {
     expect(checkDecodedText(0, '')).toBeNull();
   });
+  it('BOM 만 있는 작은 파일(디코딩 후 "")은 한계 초과가 아니다 → 파서가 EMPTY_FILE', () => {
+    expect(checkDecodedText(3, '')).toBeNull();
+    expect(checkDecodedText(MAX_TEXT_CHARS, '')).toBeNull();
+  });
   it('정상 텍스트는 통과', () => {
     expect(checkDecodedText(3, '{ }')).toBeNull();
   });
