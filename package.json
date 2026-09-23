@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "description": "Google Timeline.json → 이동 경로 애니메이션 MP4 (100% 브라우저)",
+  "license": "MIT",
   "engines": {
     "node": ">=22.18"
   },
