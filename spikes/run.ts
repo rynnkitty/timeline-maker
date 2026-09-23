@@ -20,11 +20,17 @@ const headless = process.argv.includes('--headless');
 const fn = (process.argv.find((a) => a.startsWith('--fn=')) ?? '--fn=run').slice(5);
 // --base=<URL> (기본 dev 서버). 빌드 검증 시 http://localhost:4173/timeline-maker/
 const baseUrl = (process.argv.find((a) => a.startsWith('--base=')) ?? '--base=http://localhost:5173/timeline-maker/').slice(7);
-if (!['encode', 'map'].includes(name) || !BROWSERS[browserName]) {
+// --file=<로컬 경로>: 페이지의 <input type=file> 에 넣는다 (업로드 아님 · H-1)
+const fileArg = process.argv.find((a) => a.startsWith('--file='))?.slice(7);
+// --args=<JSON>: 페이지 함수 인자
+const fnArgs = process.argv.find((a) => a.startsWith('--args='))?.slice(7) ?? '';
+// --out=<dir>: 산출물 디렉터리 (기본 spikes/<name>/out)
+const outArg = process.argv.find((a) => a.startsWith('--out='))?.slice(6);
+if (!['encode', 'map', 'render'].includes(name) || !BROWSERS[browserName]) {
   console.error('usage: node spikes/run.ts encode|map chrome|edge [--headless]');
   process.exit(2);
 }
-const outDir = join(dirname(fileURLToPath(import.meta.url)), name, 'out');
+const outDir = outArg ?? join(dirname(fileURLToPath(import.meta.url)), name, 'out');
 mkdirSync(outDir, { recursive: true });
 const tag = `${browserName}${headless ? '-headless' : ''}${fn === 'run' ? '' : '-' + fn}`;
 
@@ -50,9 +56,13 @@ try {
   });
   await page.goto(`${baseUrl}spikes/${name}/index.html`, { waitUntil: 'load' });
   await page.waitForFunction('window.spike && window.spike.ready', { timeout: 60_000 });
+  if (fileArg) {
+    const input = await page.$('input[type=file]');
+    await input!.uploadFile(fileArg);
+  }
   const version = await browser.version();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const res: any = await page.evaluate(`window.spike.${fn}()`);
+  const res: any = await page.evaluate(`window.spike.${fn}(${fnArgs})`);
   const files: string[] = [];
   for (const r of res.results ?? []) {
     if (r.base64) {

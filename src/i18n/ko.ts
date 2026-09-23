@@ -7,6 +7,21 @@ export type LoadErrorCode = ParseErrorCode | 'FILE_TOO_LARGE' | 'WORKER_FAILED' 
 export const ko = {
   appTitle: '타임라인 메이커',
   placeholder: '준비 중입니다 — Phase 1 스캐폴딩',
+  /** Phase 3 최소 화면 (Phase 5 에서 디자인) */
+  app: {
+    pickFile: '타임라인 파일(Timeline.json) 선택',
+    name: '이름',
+    defaultName: '나',
+    loading: '파일을 읽는 중…',
+    preparing: '지도를 준비하는 중…',
+    privacy:
+      '파일은 업로드되지 않고 이 브라우저 안에서만 처리됩니다. 다만 지도 타일을 불러올 때 화면에 보이는 지역 정보가 타일 제공자에게 전달됩니다.',
+  },
+  preview: {
+    play: '재생',
+    pause: '일시정지',
+    scrub: '재생 위치',
+  },
   errors: {
     EMPTY_FILE: '빈 파일입니다. 내보낸 타임라인 파일(Timeline.json)을 다시 선택해 주세요.',
     NOT_JSON: 'JSON 파일이 아니거나 파일이 손상되었습니다. 내보낸 타임라인 파일(Timeline.json)을 선택해 주세요.',

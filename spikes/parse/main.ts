@@ -4,7 +4,7 @@
  * - staged*(): 측정 전용 워커를 단계별로 실행 (러너가 단계 사이에 워커 힙을 CDP 로 읽음)
  * 반환값에 좌표·bbox 를 넣지 않는다 (H-1/H-2).
  */
-import { filterByLocalDate, cumulativeKm } from '../../src/data/index.ts';
+import { filterByLocalDate, cumulativeKm, unpackTrack } from '../../src/data/index.ts';
 import { parseInWorker } from '../../src/workers/parse-client.ts';
 
 const input = document.querySelector<HTMLInputElement>('#file')!;
@@ -22,12 +22,13 @@ async function product() {
   if (!o.ok) return { ok: false, code: o.code, wallMs, bytes: f.size };
   const r = o.result;
   const months = Object.keys(r.stats.localMonths).sort();
-  const since2026 = filterByLocalDate(r.points, '2026-01-01');
+  const points = unpackTrack(r.track);
+  const since2026 = filterByLocalDate(points, '2026-01-01');
   return {
     ok: true,
     bytes: f.size,
     format: r.format,
-    points: r.points.length,
+    points: points.length,
     rawPoints: r.stats.rawPoints,
     invalidDropped: r.stats.invalidDropped,
     duplicatesDropped: r.stats.duplicatesDropped,
