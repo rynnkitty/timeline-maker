@@ -7,6 +7,10 @@ export default defineConfig({
   build: {
     target: 'es2023',
   },
+  // MapLibre 워커는 module worker(new Worker(url, {type:'module'})) — ?worker&url 번들을 ES 형식으로
+  worker: {
+    format: 'es',
+  },
   server: {
     port: 5173,
     strictPort: true,

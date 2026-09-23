@@ -116,10 +116,5 @@ async function run(frames = 48) {
   return { caps, results };
 }
 
-declare global {
-  interface Window {
-    spike: { run: typeof run; ready: boolean };
-  }
-}
-window.spike = { run, ready: true };
+(window as unknown as { spike: unknown }).spike = { run, ready: true };
 document.querySelector('#log')!.textContent = 'ready';

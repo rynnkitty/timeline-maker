@@ -16,13 +16,17 @@ const BROWSERS: Record<string, string> = {
 };
 const [name, browserName = 'chrome'] = process.argv.slice(2);
 const headless = process.argv.includes('--headless');
+// --fn=<window.spike 의 함수 이름> (기본 run)
+const fn = (process.argv.find((a) => a.startsWith('--fn=')) ?? '--fn=run').slice(5);
+// --base=<URL> (기본 dev 서버). 빌드 검증 시 http://localhost:4173/timeline-maker/
+const baseUrl = (process.argv.find((a) => a.startsWith('--base=')) ?? '--base=http://localhost:5173/timeline-maker/').slice(7);
 if (!['encode', 'map'].includes(name) || !BROWSERS[browserName]) {
   console.error('usage: node spikes/run.ts encode|map chrome|edge [--headless]');
   process.exit(2);
 }
 const outDir = join(dirname(fileURLToPath(import.meta.url)), name, 'out');
 mkdirSync(outDir, { recursive: true });
-const tag = `${browserName}${headless ? '-headless' : ''}`;
+const tag = `${browserName}${headless ? '-headless' : ''}${fn === 'run' ? '' : '-' + fn}`;
 
 const browser = await puppeteer.launch({
   executablePath: BROWSERS[browserName],
@@ -35,11 +39,20 @@ try {
   const page = await browser.newPage();
   page.on('console', (m) => console.log(`[page ${m.type()}] ${m.text()}`));
   page.on('pageerror', (e) => console.log(`[pageerror] ${e}`));
-  await page.goto(`http://localhost:5173/timeline-maker/spikes/${name}/index.html`, { waitUntil: 'load' });
+  // H-1 점검: 페이지가 연 요청의 호스트별 개수
+  const hosts: Record<string, number> = {};
+  page.on('response', (r) => {
+    if (r.status() >= 400) console.log(`[http ${r.status()}] ${r.url().slice(0, 160)}`);
+  });
+  page.on('request', (r) => {
+    const h = new URL(r.url()).host || new URL(r.url()).protocol;
+    hosts[h] = (hosts[h] ?? 0) + 1;
+  });
+  await page.goto(`${baseUrl}spikes/${name}/index.html`, { waitUntil: 'load' });
   await page.waitForFunction('window.spike && window.spike.ready', { timeout: 60_000 });
   const version = await browser.version();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const res: any = await page.evaluate('window.spike.run()');
+  const res: any = await page.evaluate(`window.spike.${fn}()`);
   const files: string[] = [];
   for (const r of res.results ?? []) {
     if (r.base64) {
@@ -50,7 +63,7 @@ try {
       delete r.base64;
     }
   }
-  const summary = { browser: browserName, headless, version, ...res };
+  const summary = { browser: browserName, headless, version, requestHosts: hosts, ...res };
   writeFileSync(join(outDir, `${tag}.json`), JSON.stringify(summary, null, 2));
   console.log(JSON.stringify(summary, null, 2));
   console.log('files:\n' + files.join('\n'));
