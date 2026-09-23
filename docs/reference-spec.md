@@ -221,4 +221,6 @@ $.userLocationProfile
 | §2.5 Android | — | tz 필드 위치, `rawSignals.position.LatLng` 대문자, `frequentPlaces.placeLocation` 문자열 직접, `timelineMemory`, 가변 소수 자릿수, 동일 타임스탬프 쌍 | 에이전트 v1.2 |
 | Phase 2 월 경계 | tz 필드 있으면 사용 | ISO 접미 오프셋 1차 소스 | 에이전트 v1.2 |
 | T1 압축 기준 (Phase 3) | 시간 선형 ("월당 ≈1.7s") | **누적 거리 선형** — km 카운터 초당 ≈772 km 일정, 월 10/10 일치 | `CLAUDE.md` D-24 · `docs/phase3-lookfeel.md` §1 |
+| T1 진행 끝 프레임 (Phase 4) | — | 진행은 f359 에서 끝, f360 정지 (우리 MP4 에서 km 마지막 변화 f359·고정 f360 — 레퍼런스와 동일) | `CLAUDE.md` D-24 |
+| T6 마커 소멸 방식 (Phase 4) | 사라짐 (방식 미판별, C-6) | **어두운 채로 축소** (코어 면적 93→86→80→56→0 · 알파 페이드면 f361 에 이미 밝아짐) — 우리 MP4 도 f364 부터 0 | `CLAUDE.md` D-26 |
 | S7 트레일 하한 (Phase 3) | 오래된 선도 옅게 남음 | **≈3 영상초 뒤 사라짐** (f070 나이 1.5 s 보임 · f103 나이 2.9 s 없음), 아웃트로에서 전 경로 복귀 | `CLAUDE.md` D-26 · `docs/phase3-lookfeel.md` §3 |
