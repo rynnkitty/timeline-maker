@@ -8,7 +8,7 @@
 | Phase | 이름 | 상태 | 완료일 |
 |---|---|---|---|
 | 0 | 사양 고정 & 스키마 확인 | ✅ 완료 (main `1d76d3b`) | 2026-09-23 |
-| 1 | 스캐폴딩 + 기술 스파이크 | 🟡 **O-01·O-02 확정 대기** — 나머지 DoD 충족 (`feat/phase-1`) | |
+| 1 | 스캐폴딩 + 기술 스파이크 | ✅ 완료 2026-09-23 — O-01→D-19 · O-02→D-20 확정, `main` 머지 | |
 | 2 | 파서 & 정규화 (TDD) | ⬜ | |
 | 3 | 애니메이션 엔진 | ⬜ | |
 | 4 | MP4 내보내기 | ⬜ | |
@@ -18,9 +18,7 @@
 ## 다음 세션 명령
 
 ```
-(사용자) O-01·O-02 를 docs/spike-results.md §4 에서 결정 → CLAUDE.md §3 에 기록
-timeline-maker 에이전트로 Phase 1 마무리(O-01·O-02 반영, feat/phase-1 → main 머지 여부 확인) 후
-모드 A · Phase 2 (파서 & 정규화, TDD)를 진행하라. 오라클은 tests/fixtures/expected.json, 결정은 D-16~D-18.
+timeline-maker 에이전트로 모드 A · Phase 2 (파서 & 정규화, TDD)를 진행하라. 오라클은 tests/fixtures/expected.json, 결정은 D-16~D-18.
 ```
 
 ---
@@ -47,9 +45,9 @@ DoD: reference-spec 완성 ✅ · §2.5 실파일 일치 확인(수정 반영) �
 - [x] 1-4 `.github/workflows/deploy.yml` — SHA 고정(checkout v7.0.1 · setup-node v7.0.0 · configure-pages v6.0.0 · upload-pages-artifact v5.0.0 · deploy-pages v5.0.1, GitHub API 대조), Node 22 (push 없음)
 - [x] 1-5 스파이크 A → `spikes/map/` · `docs/spike-results.md` §1 (제공자 비교표·캡처 방식·결정론·워커 로딩 해결)
 - [x] 1-6 스파이크 B → `spikes/encode/` · `docs/browser-support.md` (Chrome·Edge·headless·빌드 5/5 PASS)
-- [ ] 1-7 **O-01 · O-02 사용자 확정** → `CLAUDE.md` §3 (권장안 `docs/spike-results.md` §4)
+- [x] 1-7 **O-01 · O-02 사용자 확정** (D-19 · D-20) → `CLAUDE.md` §3 (권장안 `docs/spike-results.md` §4)
 
-DoD: dev·build·test 통과 ✅ · 스파이크 A/B 산출물과 비교표 ✅ · 스파이크 코드 `spikes/` 격리 ✅ · **O-01·O-02 확정 ⏳**
+DoD: dev·build·test 통과 ✅ · 스파이크 A/B 산출물과 비교표 ✅ · 스파이크 코드 `spikes/` 격리 ✅ · **O-01·O-02 확정 ✅**
 
 ## Phase 2 — 파서 & 정규화 (TDD)
 
@@ -99,6 +97,7 @@ Task 는 각 Phase 진입 시 에이전트 §3 을 기준으로 분해해 여기
 
 | 일자 | 변경 |
 |---|---|
+| 2026-09-23 | Phase 1 종료 — O-01→D-19, O-02→D-20 사용자 확정, `feat/phase-1` → `main` 머지 |
 | 2026-09-23 | Phase 1 — 스캐폴딩·워크플로·스파이크 A/B 완료, O-01·O-02 확정 대기. Carry-over C-5 해소, C-7~C-11 추가 |
 | 2026-09-23 | Q1~Q4 사용자 결정 — 전부 (a) 채택, `CLAUDE.md` v1.2 (D-16~D-18 · H-2) 반영 |
 | 2026-09-23 | 생성 — Phase 0 완료 기록, Phase 1~2 Task, 질문 Q1~Q3, Carry-over C-1~C-6 |
