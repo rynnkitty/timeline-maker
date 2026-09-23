@@ -9,7 +9,7 @@
 import { DEFAULT_CAMERA, computeCameras, type CameraParams } from './camera.ts';
 import { FONT_FAMILY, HUD, localYearMonth, subtitleText, titleText, type HudLayout } from './hud.ts';
 import { worldScale } from './mercator.ts';
-import { dataTimeAt, makeTimeline, markerAlpha, outroMoveProgress, type Timeline } from './timeline.ts';
+import { makeTimeline, markerAlpha, outroMoveProgress, paceAt, type Timeline } from './timeline.ts';
 import { GREEN, TRAIL_BANDS, bandEdgesS, mixOutro, rgbCss, strokeForAge, type Stroke, type TrailTheme } from './trail.ts';
 import { headAt, indexAtOrBefore, type Head, type Track } from './track.ts';
 import type { Camera, MapRenderer } from './types.ts';
@@ -39,7 +39,7 @@ export type Scene = {
 
 export function buildScene(track: Track, o: SceneOptions): Scene {
   if (track.n === 0) throw new Error('empty track');
-  const timeline = makeTimeline(track.t[0], track.t[track.n - 1], o.animS);
+  const timeline = makeTimeline(track.pace[track.n - 1], o.animS);
   const { year } = localYearMonth(track.t[0], track.tz[0]);
   return {
     track,
@@ -59,6 +59,7 @@ export type Band = { from: number; to: number; toHead: boolean; stroke: Stroke }
 
 export type FrameState = {
   i: number;
+  /** 헤드 위치의 데이터 시각 (epoch ms) */
   dataT: number;
   camera: Camera;
   head: Head;
@@ -71,30 +72,30 @@ export type FrameState = {
 export function computeFrame(sc: Scene, i: number): FrameState {
   const { track: tr, timeline: tl, theme: th } = sc;
   const fi = Math.max(0, Math.min(tl.frames - 1, i));
-  const dataT = dataTimeAt(tl, fi);
-  const head = headAt(tr, dataT);
+  const head = headAt(tr, paceAt(tl, fi));
   const outroMix = outroMoveProgress(tl, fi);
 
-  // 나이 경계 → 시간 경계 → 인덱스 경계. 나이는 인덱스에 대해 단조라 밴드 = 연속 구간
+  // 나이 경계(영상초) → 진행 경계 → 인덱스 경계. 나이는 인덱스에 대해 단조라 밴드 = 연속 구간 (오래된 것부터)
   const edges = bandEdgesS(th, TRAIL_BANDS);
   const bands: Band[] = [];
   let start = 0;
   for (let b = TRAIL_BANDS; b >= 0; b--) {
-    const endT = dataT - edges[b] * tl.msPerVideoS; // 이 밴드에 속하는 가장 늦은 시간
-    const end = b === 0 ? head.i : Math.min(head.i, indexAtOrBefore(tr, endT));
+    const endPace = head.pace - edges[b] * tl.perVideoS; // 이 밴드에 속하는 가장 앞선 진행량
+    const end = b === 0 ? head.i : Math.min(head.i, indexAtOrBefore(tr, endPace));
     if (end < start && b !== 0) continue;
-    const ageMid = b === TRAIL_BANDS ? th.rampS : (edges[b] + edges[b + 1]) / 2;
+    const age = b === TRAIL_BANDS ? edges[b] : (edges[b] + edges[b + 1]) / 2;
+    const stroke = mixOutro(strokeForAge(age, th), outroMix, th);
     const from = Math.max(0, start - 1); // 앞 밴드의 마지막 점과 겹쳐 이음매 없이
-    bands.push({ from, to: Math.max(from, end), toHead: b === 0, stroke: mixOutro(strokeForAge(ageMid, th), outroMix, th) });
+    if (stroke.alpha > 0) bands.push({ from, to: Math.max(from, end), toHead: b === 0, stroke });
     start = end + 1;
   }
 
   return {
     i: fi,
-    dataT,
+    dataT: head.t,
     camera: sc.cameras[fi],
     head,
-    subtitle: subtitleText(dataT, head.tz, head.km),
+    subtitle: subtitleText(head.t, head.tz, head.km),
     bands,
     markerAlpha: markerAlpha(tl, fi),
     outroMix,

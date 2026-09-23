@@ -1,7 +1,11 @@
 /**
- * 영상 시간 ↔ 데이터 시간 (D-05 · 에이전트 §5 시간 매핑). 모든 계산은 **프레임 인덱스** 기준 (H-6).
- * 레퍼런스 실측 (docs/reference-spec.md §2): km 마지막 변화 f359 · f360 부터 고정 · 아웃트로 줌 f361→f381 ·
- * 마커 소멸 f361→f364.
+ * 영상 시간 ↔ 진행량 (D-05 · D-24). 모든 계산은 **프레임 인덱스** 기준 (H-6).
+ *
+ * D-24: 진행은 **누적 거리에 선형** — 레퍼런스 km 카운터가 초당 거의 일정(≈772 km/s)하고, 거리 선형 가설이
+ * 12개 기준 프레임의 월 표기 10/10 · km 평균 오차 1.7% 로 맞는다 (시간 선형은 6/10 · 10.4%). docs/phase3-lookfeel.md §1.
+ * 이동 거리가 0 인 트랙은 점 순번 선형으로 폴백한다 (track.ts pace).
+ *
+ * 레퍼런스 실측 (docs/reference-spec.md §2): km 마지막 변화 f359 · f360 부터 고정 · 아웃트로 줌 f361→f381 · 마커 소멸 f361→f364.
  */
 export const FPS = 24;
 export const OUTRO_S = 1.5;
@@ -16,27 +20,23 @@ export type Timeline = {
   animS: number;
   /** 전체 프레임 수 N */
   frames: number;
-  /** 애니메이션 구간 프레임 수 (= animS·FPS). 이 프레임에서 데이터 시간 = 끝 */
+  /** 애니메이션 구간 프레임 수 (= animS·FPS). 이 프레임에서 진행 = 끝 */
   animFrames: number;
-  /** 데이터 시간 범위 (epoch ms) */
-  t0: number;
-  t1: number;
-  /** 영상 1초당 데이터 ms */
-  msPerVideoS: number;
+  /** 총 진행량 (pace 단위 — km 또는 점 순번) */
+  total: number;
+  /** 영상 1초당 진행량 */
+  perVideoS: number;
 };
 
-export function makeTimeline(t0: number, t1: number, animS: number): Timeline {
-  if (!(t1 >= t0)) throw new Error('timeline: t1 < t0');
-  return { animS, frames: frameCount(animS), animFrames: Math.round(animS * FPS), t0, t1, msPerVideoS: (t1 - t0) / animS };
+export function makeTimeline(total: number, animS: number): Timeline {
+  if (!(total >= 0)) throw new Error('timeline: total < 0');
+  return { animS, frames: frameCount(animS), animFrames: Math.round(animS * FPS), total, perVideoS: total / animS };
 }
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
-/** 프레임 i 의 데이터 시간 — 선형 압축, 애니메이션 끝 이후 고정. 음수 i 는 시작 이전(카메라 평활용)으로 외삽 */
-export function dataTimeAt(tl: Timeline, i: number): number {
-  const p = Math.min(1, i / tl.animFrames);
-  return tl.t0 + p * (tl.t1 - tl.t0);
-}
+/** 프레임 i 의 진행량 — 선형, 애니메이션 끝 이후 고정 */
+export const paceAt = (tl: Timeline, i: number) => clamp01(i / tl.animFrames) * tl.total;
 
 /** 아웃트로 카메라 이동 진행률 0→1 (f=animFrames 에서 0, +21 에서 1) */
 export const outroMoveProgress = (tl: Timeline, i: number) => clamp01((i - tl.animFrames) / OUTRO_MOVE_FRAMES);

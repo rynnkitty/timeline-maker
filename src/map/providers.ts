@@ -29,13 +29,34 @@ function relabel(style: StyleSpecification, field: unknown): StyleSpecification 
   return style;
 }
 
+/**
+ * 레퍼런스(f000, 줌≈7.7)의 대도시 라벨은 대문자·점 없음 (SEOUL 형식). CARTO GL 은 줌 7~8 에서 점+혼합 대소문자,
+ * 8 이상에서 대문자 → 라벨 배율(k)로 MapLibre 줌이 0.43 낮아지는 만큼 경계를 한 단계 당긴다 (C-7).
+ */
+function cityLabelsLikeReference(style: StyleSpecification): StyleSpecification {
+  for (const l of style.layers) {
+    if (l.id === 'place_city_r5' || l.id === 'place_city_r6') l.minzoom = 7;
+    // 중간 도시(r6)는 저줌에서 혼합 대소문자 (레퍼런스 f000: Kaesong · Ansan), 고줌에서 대문자 (f070: ANSAN).
+    // 레이아웃 속성의 줌 함수는 **타일 정수 줌**으로 평가된다 → 경계는 정수(8)
+    if (l.id === 'place_city_r6' && l.layout)
+      (l.layout as Record<string, unknown>)['text-transform'] = {
+        stops: [
+          [7, 'none'],
+          [8, 'uppercase'],
+        ],
+      };
+    if (l.id === 'place_city_dot_z7' || l.id === 'place_capital_dot_z7') l.maxzoom = 7;
+  }
+  return style;
+}
+
 export const PROVIDERS: Record<ProviderId, TileProvider> = {
   carto: {
     id: 'carto',
     styleUrl: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
     attribution: '© OpenStreetMap contributors © CARTO',
     // CARTO Positron 은 z≥13 에서 한글 `name` 으로 바뀌고 글리프 서버에 한글이 없다 → 전 줌 name_en 우선
-    transform: (s) => relabel(s, LABEL),
+    transform: (s) => relabel(cityLabelsLikeReference(s), LABEL),
     hosts: ['https://basemaps.cartocdn.com', 'https://tiles.basemaps.cartocdn.com', 'https://*.basemaps.cartocdn.com'],
   },
   openfreemap: {
