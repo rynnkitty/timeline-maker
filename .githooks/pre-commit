@@ -1,0 +1,3 @@
+#!/bin/sh
+# H-2 커밋 전 개인정보 검사 (CLAUDE.md §5). 활성화: git config core.hooksPath .githooks (npm install 시 prepare 가 설정)
+exec node scripts/privacy-check.ts

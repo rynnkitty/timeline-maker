@@ -1,0 +1,76 @@
+[
+  {
+    "endTime": "2026-03-10T08:00:00.000-05:00",
+    "startTime": "2026-03-10T07:00:00.000-05:00",
+    "visit": {
+      "hierarchyLevel": "0",
+      "topCandidate": {
+        "probability": "0.000000",
+        "semanticType": "Unknown",
+        "placeID": "ChIJjW-5sPN7hQP-C8KPzw55Z6u",
+        "placeLocation": "geo:0.000000,-78.455800"
+      },
+      "probability": "0.000000"
+    }
+  },
+  {
+    "endTime": "2026-03-10T10:00:00.000-05:00",
+    "startTime": "2026-03-10T08:00:00.000-05:00",
+    "activity": {
+      "probability": "0.000000",
+      "end": "geo:0.000000,-78.455700",
+      "topCandidate": {
+        "type": "walking",
+        "probability": "0.000000"
+      },
+      "distanceMeters": "0",
+      "start": "geo:0.000000,-78.457500"
+    }
+  },
+  {
+    "endTime": "2026-03-10T10:00:00.000-05:00",
+    "startTime": "2026-03-10T08:00:00.000-05:00",
+    "timelinePath": [
+      {
+        "point": "geo:0.000000,-78.457500",
+        "durationMinutesOffsetFromStartTime": "0"
+      },
+      {
+        "point": "geo:0.000000,-78.457300",
+        "durationMinutesOffsetFromStartTime": "6"
+      },
+      {
+        "point": "geo:0.000000,-78.457100",
+        "durationMinutesOffsetFromStartTime": "12"
+      },
+      {
+        "point": "geo:0.000000,-78.456900",
+        "durationMinutesOffsetFromStartTime": "18"
+      },
+      {
+        "point": "geo:0.000000,-78.456700",
+        "durationMinutesOffsetFromStartTime": "24"
+      },
+      {
+        "point": "geo:0.000000,-78.456500",
+        "durationMinutesOffsetFromStartTime": "30"
+      },
+      {
+        "point": "geo:0.000000,-78.456300",
+        "durationMinutesOffsetFromStartTime": "36"
+      },
+      {
+        "point": "geo:0.000000,-78.456100",
+        "durationMinutesOffsetFromStartTime": "42"
+      },
+      {
+        "point": "geo:0.000000,-78.455900",
+        "durationMinutesOffsetFromStartTime": "48"
+      },
+      {
+        "point": "geo:0.000000,-78.455700",
+        "durationMinutesOffsetFromStartTime": "54"
+      }
+    ]
+  }
+]

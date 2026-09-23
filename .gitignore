@@ -1,0 +1,17 @@
+# ── H-2: 실제 위치 데이터·사내 자료 (CLAUDE.md §5) ──
+ref/
+docs/reference/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+Timeline*.json
+timeline*.json
+Records.json
+Semantic Location History/
+# 합성 픽스처(가짜 좌표)만 예외 허용
+!tests/fixtures/**
+
+# ── build ──
+node_modules/
+dist/
+*.log
+.DS_Store

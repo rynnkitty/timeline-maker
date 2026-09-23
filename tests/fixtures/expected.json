@@ -1,0 +1,196 @@
+{
+  "generator": "scripts/make-fixtures.ts",
+  "seed": 20260923,
+  "earthRadiusKm": 6371.0088,
+  "speedLimitKmh": 1000,
+  "trackPolicy": "timelinePath 포인트만 트랙 소스로 사용 · 같은 타임스탬프 그룹은 파일 순서상 첫 점만 유지 · 직전 유효점 대비 속도 >= SPEED_LIMIT_KMH 인 점 제거 · 시간순 정렬. (Phase 2 정책 확정 대기 — ROADMAP Q1/Q2)",
+  "kmTolerance": "relative 1e-6 (같은 반경·같은 점 순서일 때). 반경을 바꾸면 재생성",
+  "errorCodes": {
+    "EMPTY_FILE": "0바이트/공백만",
+    "NOT_JSON": "JSON.parse 실패",
+    "LEGACY_TAKEOUT": "구 Takeout(Records.json · Semantic Location History) — D-03 범위 외",
+    "UNKNOWN_FORMAT": "JSON 이지만 Android/iOS/구 Takeout 어느 것도 아님",
+    "NO_DATA": "형식은 맞지만 유효 트랙 포인트 0개"
+  },
+  "fixtures": {
+    "android-sample.json": {
+      "purpose": "실파일 구조 모사(Android). 서울 일상 4개월 + 부산 KTX·강릉 자동차·제주 FLYING(정당한 ~400km/h, 기내 경로점 없음)·대구 당일. 동일 타임스탬프 중복(좌표 다름)과 순간이동 이상치 2개 주입. timelinePath 세그먼트엔 tz 필드 없음, visit/activity/timelineMemory 엔 있음. hierarchyLevel 1 중첩 visit, parking, rawSignals(position.LatLng 대문자), userLocationProfile 포함.",
+      "segmentCounts": {
+        "visit": 282,
+        "activity": 268,
+        "timelinePath": 1440,
+        "timelineMemory": 3
+      },
+      "rawSignals": 609,
+      "rawPathPoints": 5561,
+      "format": "android",
+      "expect": "track",
+      "points": 5497,
+      "firstTime": "2025-12-31T15:03:00.000Z",
+      "lastTime": "2026-04-30T13:37:40.707Z",
+      "totalKm": 4534.137,
+      "maxTrueSpeedKmh": 293.8,
+      "localMonths": {
+        "2026-01": 1411,
+        "2026-02": 1289,
+        "2026-03": 1437,
+        "2026-04": 1360
+      },
+      "utcMonths": {
+        "2025-12": 17,
+        "2026-01": 1405,
+        "2026-02": 1290,
+        "2026-03": 1445,
+        "2026-04": 1340
+      },
+      "injected": {
+        "sameTimestampDuplicates": 62,
+        "speedOutliers": 2
+      }
+    },
+    "ios-sample.json": {
+      "purpose": "iOS 구조(배열 루트 · geo: URI · 숫자 문자열 · placeID · durationMinutesOffsetFromStartTime 정수 분 문자열). ⚠ 실파일 미검증 가정 — activity type 값 표기(소문자·공백)와 timelinePath 창 길이(2h)는 추정.",
+      "segmentCounts": {
+        "visit": 131,
+        "activity": 128,
+        "timelinePath": 708,
+        "timelineMemory": 0
+      },
+      "rawPathPoints": 2847,
+      "format": "ios",
+      "expect": "track",
+      "points": 2847,
+      "firstTime": "2025-12-31T15:02:00.000Z",
+      "lastTime": "2026-02-28T13:54:00.000Z",
+      "totalKm": 2084.812,
+      "maxTrueSpeedKmh": 155.8,
+      "localMonths": {
+        "2026-01": 1516,
+        "2026-02": 1331
+      },
+      "utcMonths": {
+        "2025-12": 17,
+        "2026-01": 1511,
+        "2026-02": 1319
+      },
+      "injected": {
+        "sameTimestampDuplicates": 0,
+        "speedOutliers": 0
+      }
+    },
+    "edge-empty.json": {
+      "purpose": "0바이트 파일",
+      "expect": "error",
+      "error": "EMPTY_FILE"
+    },
+    "edge-not-json.json": {
+      "purpose": "JSON 아님",
+      "expect": "error",
+      "error": "NOT_JSON"
+    },
+    "edge-legacy-records.json": {
+      "purpose": "구 Takeout Records.json (latitudeE7) — 범위 외, 안내만 (D-03)",
+      "expect": "error",
+      "error": "LEGACY_TAKEOUT"
+    },
+    "edge-legacy-semantic.json": {
+      "purpose": "구 Takeout Semantic Location History (timelineObjects) — 범위 외, 안내만 (D-03)",
+      "expect": "error",
+      "error": "LEGACY_TAKEOUT"
+    },
+    "edge-empty-android.json": {
+      "purpose": "Android 구조지만 세그먼트 0개",
+      "format": "android",
+      "expect": "error",
+      "error": "NO_DATA"
+    },
+    "edge-empty-ios.json": {
+      "purpose": "빈 배열 — 형식 판별 불가하지만 사용자에겐 \"데이터 없음\"으로 안내 (권장안, Phase 2 확정)",
+      "expect": "error",
+      "error": "NO_DATA"
+    },
+    "edge-zero-coords.android.json": {
+      "purpose": "좌표 0(lng=0 그리니치, lat=0 적도)·\"0°\"/\"0.0°\" 두 표기·음수 좌표·tz 필드 0(falsy)·distanceMeters 0·probability 0·hierarchyLevel 0. 현지 월 ≠ UTC 월 인 점(적도 UTC-5 저녁, 서울 새벽) 포함 → localMonths 로 판정해야 한다.",
+      "format": "android",
+      "expect": "track",
+      "points": 30,
+      "firstTime": "2026-02-27T22:00:00.000Z",
+      "lastTime": "2026-03-31T17:25:00.000Z",
+      "totalKm": 24304.136,
+      "maxTrueSpeedKmh": 337.8,
+      "localMonths": {
+        "2026-02": 24,
+        "2026-04": 6
+      },
+      "utcMonths": {
+        "2026-02": 12,
+        "2026-03": 18
+      },
+      "injected": {
+        "sameTimestampDuplicates": 0,
+        "speedOutliers": 0
+      }
+    },
+    "edge-zero-values.ios.json": {
+      "purpose": "iOS: 첫 점 durationMinutesOffsetFromStartTime \"0\"(문자열 falsy 아님·숫자 0 falsy), distanceMeters \"0\", hierarchyLevel \"0\", probability \"0.000000\", lat 0, UTC-5.",
+      "format": "ios",
+      "expect": "track",
+      "points": 10,
+      "firstTime": "2026-03-10T13:00:00.000Z",
+      "lastTime": "2026-03-10T13:54:00.000Z",
+      "totalKm": 0.2,
+      "maxTrueSpeedKmh": 0.2,
+      "localMonths": {
+        "2026-03": 10
+      },
+      "utcMonths": {
+        "2026-03": 10
+      },
+      "injected": {
+        "sameTimestampDuplicates": 0,
+        "speedOutliers": 0
+      }
+    },
+    "edge-reversed.android.json": {
+      "purpose": "세그먼트·경로점 모두 시간 역순. 파서는 시간순으로 정렬해야 하며 결과는 순방향과 같아야 한다 (실파일은 정렬돼 있음 — 방어용).",
+      "format": "android",
+      "expect": "track",
+      "points": 93,
+      "firstTime": "2026-05-03T15:02:00.000Z",
+      "lastTime": "2026-05-05T13:57:27.381Z",
+      "totalKm": 42.194,
+      "maxTrueSpeedKmh": 24.6,
+      "localMonths": {
+        "2026-05": 93
+      },
+      "utcMonths": {
+        "2026-05": 93
+      },
+      "injected": {
+        "sameTimestampDuplicates": 0,
+        "speedOutliers": 0
+      }
+    },
+    "edge-teleport.android.json": {
+      "purpose": "1분 만에 ~325km 튀는 점 1개(제거 대상)와 11분에 ~150km(≈820km/h, 유지 대상)를 함께 둔다 — 임계값 1,000km/h 경계 검증.",
+      "rawPathPoints": 27,
+      "format": "android",
+      "expect": "track",
+      "points": 26,
+      "firstTime": "2026-06-01T00:00:00.000Z",
+      "lastTime": "2026-06-01T01:04:00.000Z",
+      "totalKm": 151.992,
+      "maxTrueSpeedKmh": 818.8,
+      "localMonths": {
+        "2026-06": 26
+      },
+      "utcMonths": {
+        "2026-06": 26
+      },
+      "injected": {
+        "sameTimestampDuplicates": 0,
+        "speedOutliers": 1
+      }
+    }
+  }
+}

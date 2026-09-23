@@ -1,0 +1,20 @@
+{
+  "locations": [
+    {
+      "latitudeE7": 375665000,
+      "longitudeE7": 1269780000,
+      "accuracy": 20,
+      "source": "WIFI",
+      "deviceTag": 12345,
+      "timestamp": "2019-03-01T08:00:00.000Z"
+    },
+    {
+      "latitudeE7": 375547000,
+      "longitudeE7": 1269707000,
+      "accuracy": 15,
+      "source": "GPS",
+      "deviceTag": 12345,
+      "timestamp": "2019-03-01T08:10:00.000Z"
+    }
+  ]
+}

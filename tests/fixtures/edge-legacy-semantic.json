@@ -1,0 +1,18 @@
+{
+  "timelineObjects": [
+    {
+      "placeVisit": {
+        "location": {
+          "latitudeE7": 375665000,
+          "longitudeE7": 1269780000,
+          "placeId": "ChIJAAAAAAAAAAAAAAAAAAAAAAA",
+          "address": "Fake address"
+        },
+        "duration": {
+          "startTimestamp": "2019-03-01T08:00:00.000Z",
+          "endTimestamp": "2019-03-01T09:00:00.000Z"
+        }
+      }
+    }
+  ]
+}
