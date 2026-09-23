@@ -26,8 +26,20 @@ export type MapLayer = MapRenderer & {
   projectLngLat(lng: number, lat: number): [number, number];
 };
 
+/**
+ * 탭이 **보이는 동안만** 시간을 세는 타임아웃. 가려진 탭에서는 requestAnimationFrame 이 멈춰 MapLibre 가 렌더하지 않으므로
+ * (Phase 4 실측: 가려진 8 s 동안 진행 0) 그 시간을 실패로 치지 않는다. 다시 보이면 이어서 렌더된다.
+ */
 function timeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
-  return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error(`${what} timeout`)), ms))]);
+  let timer = 0;
+  const guard = new Promise<T>((_, rej) => {
+    let visibleMs = 0;
+    timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') visibleMs += 250;
+      if (visibleMs >= ms) rej(new Error(`${what} timeout`));
+    }, 250);
+  });
+  return Promise.race([p, guard]).finally(() => clearInterval(timer));
 }
 
 export async function createMapLayer(W: number, H: number, opts: MapLayerOptions = {}): Promise<MapLayer> {

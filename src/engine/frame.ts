@@ -9,7 +9,7 @@
 import { DEFAULT_CAMERA, computeCameras, type CameraParams } from './camera.ts';
 import { FONT_FAMILY, HUD, localYearMonth, subtitleText, titleText, type HudLayout } from './hud.ts';
 import { worldScale } from './mercator.ts';
-import { makeTimeline, markerAlpha, outroMoveProgress, paceAt, type Timeline } from './timeline.ts';
+import { makeTimeline, markerScale, outroMoveProgress, paceAt, type Timeline } from './timeline.ts';
 import { GREEN, TRAIL_BANDS, bandEdgesS, mixOutro, rgbCss, strokeForAge, type Stroke, type TrailTheme } from './trail.ts';
 import { headAt, indexAtOrBefore, type Head, type Track } from './track.ts';
 import type { Camera, MapRenderer } from './types.ts';
@@ -65,7 +65,8 @@ export type FrameState = {
   head: Head;
   subtitle: string;
   bands: Band[];
-  markerAlpha: number;
+  /** 마커 반지름 배율 (아웃트로에서 1→0) */
+  markerScale: number;
   outroMix: number;
 };
 
@@ -97,7 +98,7 @@ export function computeFrame(sc: Scene, i: number): FrameState {
     head,
     subtitle: subtitleText(head.t, head.tz, head.km),
     bands,
-    markerAlpha: markerAlpha(tl, fi),
+    markerScale: markerScale(tl, fi),
     outroMix,
   };
 }
@@ -146,17 +147,17 @@ export function drawFrame(ctx: Ctx2D, sc: Scene, st: FrameState, mapImage: Canva
     ctx.stroke();
   }
 
-  // 현재 위치 마커: 녹색 링 + 검정 코어 (아웃트로에서 페이드아웃)
-  if (st.markerAlpha > 0) {
+  // 현재 위치 마커: 녹색 링 + 검정 코어 (아웃트로에서 축소되며 사라짐)
+  if (st.markerScale > 0) {
     const hx = px(st.head.x);
     const hy = py(st.head.y);
-    ctx.fillStyle = rgbCss(th.recent, st.markerAlpha);
+    ctx.fillStyle = rgbCss(th.recent);
     ctx.beginPath();
-    ctx.arc(hx, hy, th.markerRingR * s, 0, Math.PI * 2);
+    ctx.arc(hx, hy, th.markerRingR * s * st.markerScale, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = rgbCss(th.markerCore, st.markerAlpha);
+    ctx.fillStyle = rgbCss(th.markerCore);
     ctx.beginPath();
-    ctx.arc(hx, hy, th.markerCoreR * s, 0, Math.PI * 2);
+    ctx.arc(hx, hy, th.markerCoreR * s * st.markerScale, 0, Math.PI * 2);
     ctx.fill();
   }
 

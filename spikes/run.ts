@@ -26,13 +26,14 @@ const fileArg = process.argv.find((a) => a.startsWith('--file='))?.slice(7);
 const fnArgs = process.argv.find((a) => a.startsWith('--args='))?.slice(7) ?? '';
 // --out=<dir>: 산출물 디렉터리 (기본 spikes/<name>/out)
 const outArg = process.argv.find((a) => a.startsWith('--out='))?.slice(6);
-if (!['encode', 'map', 'render'].includes(name) || !BROWSERS[browserName]) {
+if (!['encode', 'map', 'render', 'export'].includes(name) || !BROWSERS[browserName]) {
   console.error('usage: node spikes/run.ts encode|map chrome|edge [--headless]');
   process.exit(2);
 }
 const outDir = outArg ?? join(dirname(fileURLToPath(import.meta.url)), name, 'out');
 mkdirSync(outDir, { recursive: true });
-const tag = `${browserName}${headless ? '-headless' : ''}${fn === 'run' ? '' : '-' + fn}`;
+const tagArg = process.argv.find((a) => a.startsWith('--tag='))?.slice(6);
+const tag = tagArg ?? `${browserName}${headless ? '-headless' : ''}${fn === 'run' ? '' : '-' + fn}`;
 
 const browser = await puppeteer.launch({
   executablePath: BROWSERS[browserName],
@@ -45,6 +46,8 @@ try {
   const page = await browser.newPage();
   page.on('console', (m) => console.log(`[page ${m.type()}] ${m.text()}`));
   page.on('pageerror', (e) => console.log(`[pageerror] ${e}`));
+  // --no-webcodecs: 미지원 브라우저 흉내 (D-20 안내 경로 검증)
+  if (process.argv.includes('--no-webcodecs')) await page.evaluateOnNewDocument('delete window.VideoEncoder; delete window.VideoFrame;');
   // H-1 점검: 페이지가 연 요청의 호스트별 개수
   const hosts: Record<string, number> = {};
   page.on('response', (r) => {
@@ -61,6 +64,14 @@ try {
     await input!.uploadFile(fileArg);
   }
   const version = await browser.version();
+  const heapMB = async () => {
+    const c = await page.createCDPSession();
+    await c.send('HeapProfiler.collectGarbage');
+    const h = await c.send('Runtime.getHeapUsage');
+    await c.detach();
+    return Math.round((h.usedSize / 1048576) * 10) / 10;
+  };
+  const heapBefore = await heapMB();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const res: any = await page.evaluate(`window.spike.${fn}(${fnArgs})`);
   const files: string[] = [];
@@ -73,7 +84,15 @@ try {
       delete r.base64;
     }
   }
-  const summary = { browser: browserName, headless, version, requestHosts: hosts, ...res };
+  const heapAfter = await heapMB();
+  const summary = {
+    browser: browserName,
+    headless,
+    version,
+    requestHosts: hosts,
+    mainHeapMB: { before: heapBefore, afterGC: heapAfter },
+    ...res,
+  };
   writeFileSync(join(outDir, `${tag}.json`), JSON.stringify(summary, null, 2));
   console.log(JSON.stringify(summary, null, 2));
   console.log('files:\n' + files.join('\n'));

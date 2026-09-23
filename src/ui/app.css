@@ -41,3 +41,12 @@ label {
   min-width: 88px;
   text-align: right;
 }
+.export-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 8px 0;
+}
+.export-row progress {
+  width: 240px;
+}

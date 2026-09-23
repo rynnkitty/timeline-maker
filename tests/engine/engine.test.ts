@@ -22,7 +22,7 @@ import {
   lngToX,
   makeTimeline,
   makeTrack,
-  markerAlpha,
+  markerScale,
   outroMoveProgress,
   strokeForAge,
   subtitleText,
@@ -44,23 +44,25 @@ describe('timeline (D-05)', () => {
     expect(frameCount(30)).toBe(756);
     expect(frameCount(60)).toBe(1476);
   });
-  it('진행은 선형 (D-24 거리 기준): f0 = 0 · f360 = 끝 · 이후 고정 (레퍼런스 km 고정 f360)', () => {
+  it('진행은 선형 (D-24 거리 기준): f0 = 0 · f359 = 끝(레퍼런스 km 마지막 변화 f359) · 이후 고정', () => {
     const tl = makeTimeline(11574, 15);
     expect(paceAt(tl, 0)).toBe(0);
-    expect(paceAt(tl, 180)).toBeCloseTo(11574 / 2, 9);
-    expect(paceAt(tl, 359)).toBeLessThan(11574);
+    expect(paceAt(tl, 179.5)).toBeCloseTo(11574 / 2, 9);
+    expect(paceAt(tl, 358)).toBeLessThan(11574);
+    expect(paceAt(tl, 359)).toBe(11574);
     expect(paceAt(tl, 360)).toBe(11574);
     expect(paceAt(tl, 395)).toBe(11574);
     expect(tl.perVideoS).toBeCloseTo(771.6, 1); // 레퍼런스 초당 ≈772 km
   });
-  it('아웃트로 이동 f361→f381, 마커 페이드 f361→f364', () => {
+  it('아웃트로 이동 f361→f381, 마커 축소 f361→f364 (어두운 채로 작아짐)', () => {
     const tl = makeTimeline(1, 15);
     expect(outroMoveProgress(tl, 360)).toBe(0);
     expect(outroMoveProgress(tl, 361)).toBeGreaterThan(0);
     expect(outroMoveProgress(tl, 381)).toBe(1);
-    expect(markerAlpha(tl, 360)).toBe(1);
-    expect(markerAlpha(tl, 363)).toBeGreaterThan(0);
-    expect(markerAlpha(tl, 364)).toBe(0);
+    expect(markerScale(tl, 360)).toBe(1);
+    expect(markerScale(tl, 361)).toBeGreaterThan(0.99);
+    expect(markerScale(tl, 363)).toBeGreaterThan(0.6);
+    expect(markerScale(tl, 364)).toBe(0);
   });
 });
 
@@ -241,7 +243,7 @@ describe('frame', () => {
     const f = computeFrame(sc, 0);
     expect(f.subtitle.endsWith('· 0 km')).toBe(true);
     expect(f.head.i).toBe(0);
-    expect(f.markerAlpha).toBe(1);
+    expect(f.markerScale).toBe(1);
   });
   it('밴드는 오래된 것부터, 미래 점을 포함하지 않는다', () => {
     for (const i of [1, 50, 137, 240, 359, 360, 370, 395]) {
@@ -254,7 +256,7 @@ describe('frame', () => {
       expect(f.bands.at(-1)!.toHead).toBe(true);
     }
   });
-  it('km 는 단조 증가, f360 이후 고정 · 마커는 f364 부터 0', () => {
+  it('km 는 단조 증가, f359 이후 고정 · 마커는 f364 부터 0', () => {
     let prev = -1;
     const km = (i: number) =>
       Number(
@@ -267,9 +269,10 @@ describe('frame', () => {
       expect(v).toBeGreaterThanOrEqual(prev);
       prev = v;
     }
-    expect(km(360)).toBe(km(395));
-    expect(km(360)).toBe(Math.floor(tr.km[tr.n - 1]));
-    expect(computeFrame(sc, 364).markerAlpha).toBe(0);
+    expect(km(359)).toBe(km(395));
+    expect(km(359)).toBe(Math.floor(tr.km[tr.n - 1]));
+    expect(km(358)).toBeLessThan(km(359));
+    expect(computeFrame(sc, 364).markerScale).toBe(0);
   });
   it('같은 프레임은 같은 상태 (결정론)', () => {
     expect(computeFrame(sc, 200)).toEqual(computeFrame(sc, 200));
