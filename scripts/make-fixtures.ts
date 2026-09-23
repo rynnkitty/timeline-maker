@@ -564,8 +564,12 @@ function injectSpikes(r: Rng, pts: Pt[], n: number, far: readonly LatLng[]): Pt[
     const b = out[i + 1];
     if (a.tag !== 'true' || b.tag !== 'true' || b.t - a.t < 4 * MIN) continue;
     if (haversineKm(a.p, PUBLIC.seoulCityHall) > 30) continue; // 서울 생활 중에만
-    const t = a.t + Math.round((b.t - a.t) / 2 / 1000) * 1000;
-    out.splice(i + 1, 0, { t, off: a.off, p: offsetM(r, far[done % far.length], between(r, 0, 3000)), tag: 'outlier' });
+    // 직전 진짜 점 1분 뒤. (이전 버전은 a·b 중간 시각이라 간격이 길면 속도가 임계 미만 — 2026-09-23 Phase 2 에서 발견·수정)
+    const t = a.t + MIN;
+    const spike: Pt = { t, off: a.off, p: offsetM(r, far[done % far.length], between(r, 0, 3000)), tag: 'outlier' };
+    const kmh = haversineKm(a.p, spike.p) / ((spike.t - a.t) / HOUR);
+    if (kmh < SPEED_LIMIT_KMH * 1.5) throw new Error(`injected outlier too slow (${kmh} km/h) — generator bug`);
+    out.splice(i + 1, 0, spike);
     done++;
   }
   if (done < n) throw new Error('spike injection failed');

@@ -8,8 +8,8 @@
 | Phase | 이름 | 상태 | 완료일 |
 |---|---|---|---|
 | 0 | 사양 고정 & 스키마 확인 | ✅ 완료 (main `1d76d3b`) | 2026-09-23 |
-| 1 | 스캐폴딩 + 기술 스파이크 | ✅ 완료 2026-09-23 — O-01→D-19 · O-02→D-20 확정, `main` 머지 | |
-| 2 | 파서 & 정규화 (TDD) | ⬜ | |
+| 1 | 스캐폴딩 + 기술 스파이크 | ✅ 완료 (main `515dc69` 머지) | 2026-09-23 |
+| 2 | 파서 & 정규화 (TDD) | ✅ 완료 2026-09-23 — O-04→D-22 확정, `main` 머지 | |
 | 3 | 애니메이션 엔진 | ⬜ | |
 | 4 | MP4 내보내기 | ⬜ | |
 | 5 | UI/UX | ⬜ | |
@@ -18,7 +18,8 @@
 ## 다음 세션 명령
 
 ```
-timeline-maker 에이전트로 모드 A · Phase 2 (파서 & 정규화, TDD)를 진행하라. 오라클은 tests/fixtures/expected.json, 결정은 D-16~D-18.
+timeline-maker 에이전트로 모드 A · Phase 3 (애니메이션 엔진)을 진행하라.
+입력: src/data (TrackPoint {t,tz,lat,lng}), docs/spike-results.md §3 설계 입력, reference-spec 기준 프레임, Carry-over C-2·C-3·C-6·C-7·C-8·C-13.
 ```
 
 ---
@@ -51,12 +52,15 @@ DoD: dev·build·test 통과 ✅ · 스파이크 A/B 산출물과 비교표 ✅ 
 
 ## Phase 2 — 파서 & 정규화 (TDD)
 
-- [ ] 2-1 `detectFormat` (에러 코드는 `expected.json` `errorCodes` 기준)
-- [ ] 2-2 `parseAndroid` / `parseIos` → `TrackPoint[]`
-- [ ] 2-3 정제: 범위 검사 · 동일 타임스탬프 처리(Q2) · 속도 이상치(1,000 km/h) · 정렬
-- [ ] 2-4 파생: haversine 누적(D-14, R = 6371.0088 km) · 현지 월(ISO 접미 오프셋) · 기간 필터
-- [ ] 2-5 Web Worker 파싱 + 브라우저 실측(54MB) → O-04 확정
-- [ ] 2-6 실파일 1회 스모크 (요약 통계만)
+- [x] 2-1 `detectFormat` — android · ios · 빈 배열(→ `NO_DATA`, D-18) · legacy(Records/Semantic) · unknown
+- [x] 2-2 `extractAndroid` / `extractIos` → `TrackPoint { t, tz, lat, lng }` (D-16 timelinePath 만) — **계약 확장: `tz`(분)** 추가 (현지 월 표기용)
+- [x] 2-3 `cleanTrack`: 안정 정렬 → 같은 t 첫 점(D-17) → 직전 유효점 대비 ≥1,000 km/h 제거 (+ 첫 점 이상치 방어)
+- [x] 2-4 haversine 누적(D-14, R 6371.0088) · 현지 월/날짜(ISO 접미 오프셋) · `filterByLocalDate`
+- [x] 2-5 Web Worker (`src/workers/`) + 브라우저 실측 → `docs/browser-support.md` §4. `FILE_TOO_LARGE` 수정
+- [x] 2-6 실파일 스모크 (요약만 · `docs/reference/phase2-real-smoke.txt`, gitignore) — Phase 0 수치와 일치
+- [x] 2-7 **O-04 사용자 확정** (D-22)
+
+DoD: 픽스처 오라클 12/12 ✅ (vitest 41/41) · 엣지 케이스 전부 명시적 결과 ✅ · 좌표 0 통과 ✅ · iOS 문자열 숫자 ✅ · 실파일 스모크 ✅ · 브라우저 워커 = 오라클 ✅
 
 ## Phase 3 — 애니메이션 엔진 · Phase 4 — MP4 내보내기 · Phase 5 — UI/UX · Phase 6 — 배포
 
@@ -82,7 +86,10 @@ Task 는 각 Phase 진입 시 에이전트 §3 을 기준으로 분해해 여기
 | C-1 | **iOS 파서 실파일 미검증** (O-07) | 높음 — iOS 사용자는 첫 사용에 실패할 수 있음. activity type 표기·timelinePath 창 길이·timelineMemory 존재 여부·분 오프셋이 정수인지 전부 추정 | 합성 픽스처(`ios-sample.json`·`edge-zero-values.ios.json`) 통과 + 모르는 키 무시 + 필수 필드만 의존. UI "iOS 베타" 표기 여부는 O-07 로 Phase 5 확정. 실파일 제보 시 픽스처 보강 | 2 · 5 |
 | C-2 | 카메라 t=0 광역 줌의 원인 불명 (줌 상한 클램프 vs 선행/첫 창) | 중간 — 초반 몇 초의 룩앤필 | reference-spec K1 — 두 가설로 렌더해 f000·f034 와 대조 | 3 |
 | C-3 | 트레일 팔레트(S7·S8) 재측정 안 함 | 낮음 | Phase 3 튜닝 시 기준 프레임에서 재측정 | 3 |
-| C-4 | 브라우저 메모리 (Node 대리 지표만 있음: parse 125ms · heap +102MB) | 중간 — 수년치 파일 | Phase 2 에서 Worker 실측 → O-04 확정. rawSignals 는 파싱 직후 참조 해제 | 2 |
+| ~~C-4~~ ✅ | 브라우저 메모리 | — | Phase 2 실측 (`docs/browser-support.md` §4): 실파일 워커 최대 ≈85 MB, 400 MB 합성까지 동작, 600 MB 는 V8 문자열 한계 → `FILE_TOO_LARGE`. O-04 확정 대기 | 2 |
+| C-12 | 파일 크기 사전 차단 없음 (현재는 읽은 뒤 `FILE_TOO_LARGE` 판정) | 낮음 | Phase 5 입력 검증에서 크기 상한 안내 (D-22: 읽기 전 크기 검사 + 200MB+ 경고) | 5 |
+| C-13 | 대용량 결과(수십만~수백만 점)를 메인 스레드로 구조화 복제 — 점당 ≈90 B | 낮음 | Phase 3 에서 렌더용으로 다운샘플링하거나 Float64Array 전송 검토 | 3 |
+| C-14 | iOS 경로는 여전히 합성 픽스처로만 검증 (C-1 과 동일 위험) | 높음 | O-07 (Phase 5) | 5 |
 | ~~C-5~~ ✅ | Phase 0 산출물 미커밋 | — | main `1d76d3b` 로 커밋 (2026-09-23) | 1 |
 | C-7 | 레퍼런스 라벨이 CARTO GL 기본보다 ≈1.35배 크고 대도시 대문자 (래스터 추정) | 중간 — 룩앤필 | 컨테이너 축소 + `pixelRatio` 확대, 필요 시 text-size/transform 오버라이드 — 기준 프레임 대조 튜닝 (`docs/spike-results.md` §1.6) | 3 |
 | C-8 | 지도 출력이 카메라 이력에 의존 (다른 뷰 경유 시 z7.7 에서 ≈1.4% 픽셀 차) — 미리보기 스크럽과 내보내기의 라벨 배치가 다를 수 있음 | 중간 — H-6 해석 | 내보내기는 새 인스턴스·프레임 0 부터 순차(재생 16/16 동일 확인). 미리보기 차이는 허용할지 Phase 3 에서 판단 | 3 · 4 |
@@ -98,6 +105,8 @@ Task 는 각 Phase 진입 시 에이전트 §3 을 기준으로 분해해 여기
 | 일자 | 변경 |
 |---|---|
 | 2026-09-23 | Phase 1 종료 — O-01→D-19, O-02→D-20 사용자 확정, `feat/phase-1` → `main` 머지 |
+| 2026-09-23 | Phase 2 종료 — O-04→D-22 사용자 확정, `feat/phase-2` → `main` 머지 |
+| 2026-09-23 | Phase 2 — 파서·정규화·워커 구현(TDD, 오라클 12/12), O-04 실측, 픽스처 생성기 스파이크 시각 버그 수정. C-4 해소, C-12~C-14 추가 |
 | 2026-09-23 | Phase 1 — 스캐폴딩·워크플로·스파이크 A/B 완료, O-01·O-02 확정 대기. Carry-over C-5 해소, C-7~C-11 추가 |
 | 2026-09-23 | Q1~Q4 사용자 결정 — 전부 (a) 채택, `CLAUDE.md` v1.2 (D-16~D-18 · H-2) 반영 |
 | 2026-09-23 | 생성 — Phase 0 완료 기록, Phase 1~2 Task, 질문 Q1~Q3, Carry-over C-1~C-6 |

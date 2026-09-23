@@ -62,3 +62,21 @@
 3. WebGL2 컨텍스트 생성 가능 여부 (MapLibre 기본 `contextType: 'webgl2'`)
 
 미지원 시 동작(거부+안내 vs WebM 폴백)은 **O-02 결정 대기**.
+
+## 4. 대용량 파싱 (Phase 2 · O-04 근거)
+
+> 재현: `npx vite --port 5174` 후 `node spikes/parse/run-parse.ts <file> chrome --base=http://localhost:5174/timeline-maker/`.
+> 파일은 `<input type=file>` 에 로컬로 넣는다(업로드 없음). 워커 힙은 CDP `Runtime.getHeapUsage`, 문자열은 `backingStorageSize`(외부 문자열) 로 측정.
+> 합성 파일은 `spikes/parse/make-big.ts` 가 가짜 좌표 픽스처를 시간 이동해 반복한 것 — 경로점 밀도가 실파일의 약 20배라 **점 수·메모리 기준으로는 최악 조건**이다.
+
+| 입력 | 브라우저 | 점 수 | 워커: 읽기 / 파싱+정제 | 워커 최대 (힙 + 원문 문자열) | 추출 후 남는 힙 | 결과 |
+|---|---|---|---|---|---|---|
+| 실파일 Android 54.2 MB | Chrome 153 | 52,274 | 75 ms / 144 ms (처음 읽기는 1.4 s) | 31 MB + 54 MB | 3.9 MB | ✅ |
+| 실파일 Android 54.2 MB | Edge 153 | 52,274 | 69 ms / 143 ms | 31 MB + 54 MB | 3.9 MB | ✅ |
+| 합성 150 MB | Chrome 153 | 1,066,418 | 0.2 s / 1.3 s | 270 MB + 148 MB | 71 MB | ✅ |
+| 합성 400 MB | Chrome 153 | 2,841,949 | 0.5 s / 3.6 s | 721 MB + 394 MB | 187 MB | ✅ |
+| 합성 600 MB | Chrome 153 | — | `File.text()` 가 **예외 없이 `""`** 반환 | — | — | `FILE_TOO_LARGE` 로 안내 (수정 전엔 `EMPTY_FILE` 오안내) |
+
+- 메인 스레드는 파일 내용을 갖지 않는다(`File` 핸들만 전달). 메인 스레드 힙 증가 = 결과 점 배열 구조화 복제분뿐(실파일 +3.5 MB, 합성 150 MB 에서 +92 MB ≈ 점당 90 B).
+- 한계는 메모리가 아니라 **V8 문자열 최대 길이 2²⁹−24 자(≈ 537 M 자)**. 400 MB 까지는 여유가 있다.
+- 결과는 제품 워커(`src/workers/parse.worker.ts`)와 Vite 프로덕션 번들 모두에서 픽스처 오라클과 일치했다(android-sample 5,497점).
