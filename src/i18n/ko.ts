@@ -30,9 +30,9 @@ export const ko = {
     bigCancel: '그만두기',
   },
   /** H-5: 실제 동작과 정확히 일치해야 한다 */
-  privacy: [
+  privacy: (provider: string) => [
     '파일은 업로드되지 않습니다. 읽기와 영상 만들기 모두 이 브라우저 안에서 처리됩니다.',
-    '다만 지도 타일을 불러올 때 화면에 보이는 지역 정보가 타일 제공자(CARTO)에게 전달됩니다.',
+    `다만 지도 타일을 불러올 때 화면에 보이는 지역 정보가 타일 제공자(${provider})에게 전달됩니다.`,
   ],
   options: {
     name: '이름',
@@ -84,7 +84,7 @@ export const ko = {
     },
   },
   footer: {
-    attribution: '지도 © OpenStreetMap contributors © CARTO',
+    attribution: (attr: string) => `지도 ${attr}`,
     note: '이 사이트는 분석 도구·쿠키를 쓰지 않습니다.',
   },
 } as const;

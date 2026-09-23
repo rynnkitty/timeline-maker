@@ -71,8 +71,25 @@ try {
   async function page0(page: Page) {
     await page.screenshot({ path: join(shots, 'desktop-empty.png') });
     result.privacyText = await page.$$eval('.privacy p', (ps) => ps.map((p) => p.textContent));
-    await upload(page, fx('android-sample.json'));
+    result.footer = await page.$$eval('.foot p', (ps) => ps.map((p) => p.textContent));
+    // 드래그&드롭 경로: 임시 input 으로 File 을 얻어 프레임에 drop 이벤트를 보낸다
+    await page.evaluate(() => {
+      const i = document.createElement('input');
+      i.type = 'file';
+      i.id = 'dz-src';
+      i.style.display = 'none';
+      document.body.append(i);
+    });
+    await ((await page.$('#dz-src')) as ElementHandle<HTMLInputElement>).uploadFile(fx('android-sample.json'));
+    await page.evaluate(() => {
+      const f = (document.querySelector('#dz-src') as HTMLInputElement).files![0];
+      const dt = new DataTransfer();
+      dt.items.add(f);
+      document.querySelector('.frame')!.dispatchEvent(new DragEvent('dragover', { dataTransfer: dt, bubbles: true, cancelable: true }));
+      document.querySelector('.frame')!.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
+    });
     await waitPreview(page);
+    result.dropWorks = true;
     result.summary = await text(page, '.step .msg:not(.msg-error):not(.msg-note):not(.msg-warn)');
     result.period = await page.evaluate(() => [
       (document.querySelector('#opt-from') as HTMLInputElement).value,
@@ -140,6 +157,7 @@ try {
     await upload(e, file);
     await e.waitForFunction(() => (document.querySelector('.step [role=alert]')?.textContent ?? '').length > 0, { timeout: 120_000 });
     result[`err_${code}`] = await text(e, '.step [role=alert]');
+    if (code === 'LEGACY_TAKEOUT') await e.screenshot({ path: join(shots, 'desktop-error.png') });
     await e.evaluate(() => ((document.querySelector('.step [role=alert]') as HTMLElement).textContent = ''));
   }
   // 200MB 이상 경고 → 그만두기
@@ -148,7 +166,6 @@ try {
   result.bigWarn = await text(e, '.confirm .msg-warn');
   await e.click('.confirm .btn-quiet');
   result.bigWarnDismissed = await e.$eval('.confirm', (c) => (c as HTMLElement).hidden);
-  await e.screenshot({ path: join(shots, 'desktop-error.png') });
 
   // 미지원 브라우저 (VideoEncoder 없음)
   const n = await open({ width: 1366, height: 940, noWebCodecs: true });

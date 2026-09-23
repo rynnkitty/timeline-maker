@@ -18,6 +18,7 @@ import {
 } from '../export/index.ts';
 import { ko, type LoadErrorCode } from '../i18n/ko.ts';
 import { createMapLayer, type MapLayer } from '../map/map-layer.ts';
+import { DEFAULT_PROVIDER, PROVIDERS } from '../map/providers.ts';
 import { ensureFonts } from '../render/fonts.ts';
 import { parseInWorker } from '../workers/parse-client.ts';
 import { el, koDate } from './dom.ts';
@@ -27,6 +28,8 @@ import { createPreviewPlayer, type PreviewPlayer } from './preview.ts';
 const PREVIEW_W = 480;
 const PREVIEW_H = 854;
 const BASE = import.meta.env.BASE_URL;
+/** 활성 타일 제공자 — 안내·attribution 문구가 실제 동작과 같게 (D-19 · H-3 · H-5) */
+const PROVIDER = PROVIDERS[DEFAULT_PROVIDER];
 
 type FrameState = 'empty' | 'loading' | 'preview' | 'exporting' | 'nodata';
 
@@ -36,6 +39,7 @@ export function mountApp(root: HTMLElement): void {
   let format: SourceFormat | null = null;
   let period: Period | null = null;
   let previewMap: MapLayer | null = null;
+  let previewMapPending: Promise<MapLayer> | null = null;
   let player: PreviewPlayer | null = null;
   let exporting = false;
   let abort: AbortController | null = null;
@@ -64,7 +68,7 @@ export function mountApp(root: HTMLElement): void {
   const bigContinue = el('button', { type: 'button', className: 'btn', textContent: ko.file.bigContinue });
   const bigCancel = el('button', { type: 'button', className: 'btn btn-quiet', textContent: ko.file.bigCancel });
   const bigBox = el('div', { className: 'confirm', hidden: true }, bigText, el('div', { className: 'row' }, bigContinue, bigCancel));
-  const privacy = el('div', { className: 'privacy' }, ...ko.privacy.map((t) => el('p', { textContent: t })));
+  const privacy = el('div', { className: 'privacy' }, ...ko.privacy(PROVIDER.label).map((t) => el('p', { textContent: t })));
   const fileSection = el(
     'section',
     { className: 'step' },
@@ -170,7 +174,7 @@ export function mountApp(root: HTMLElement): void {
   const footer = el(
     'footer',
     { className: 'foot' },
-    el('p', { textContent: ko.footer.attribution }),
+    el('p', { textContent: ko.footer.attribution(PROVIDER.attribution) }),
     el('p', { textContent: ko.footer.note }),
   );
   root.replaceChildren(header, el('main', { className: 'layout' }, stage, panel), footer);
@@ -215,7 +219,15 @@ export function mountApp(root: HTMLElement): void {
     const scene = sceneFor(track, PREVIEW_W, PREVIEW_H);
     if (!previewMap) {
       setFrame(frame.dataset.state === 'preview' ? 'preview' : 'loading', ko.file.preparing);
-      previewMap = await createMapLayer(PREVIEW_W, PREVIEW_H);
+      // 동시에 두 번 불려도 지도는 하나만 (WebGL 컨텍스트 누수 방지)
+      previewMapPending ??= createMapLayer(PREVIEW_W, PREVIEW_H);
+      const m = await previewMapPending;
+      previewMapPending = null;
+      if (exporting) {
+        m.destroy(); // 기다리는 사이 내보내기가 시작됨 — C-20 유지
+        return;
+      }
+      previewMap = m;
     }
     const subs = [0, scene.timeline.animFrames].map((i) => computeFrame(scene, i).subtitle);
     await ensureFonts([scene.title, ...subs, previewMap.attribution]);
