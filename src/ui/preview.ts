@@ -9,6 +9,10 @@ import { ko } from '../i18n/ko.ts';
 
 export type PreviewPlayer = {
   readonly element: HTMLElement;
+  /** 영상 캔버스 (프레임 안에 배치) */
+  readonly canvas: HTMLCanvasElement;
+  /** 재생·스크럽 조작부 (프레임 아래에 배치) */
+  readonly controls: HTMLElement;
   seek(i: number): Promise<void>;
   play(): void;
   pause(): void;
@@ -122,6 +126,8 @@ export function createPreviewPlayer(scene: Scene, map: MapRenderer): PreviewPlay
 
   return {
     element: root,
+    canvas,
+    controls: bar,
     seek: (i) => {
       pause();
       return request(i);
@@ -135,6 +141,8 @@ export function createPreviewPlayer(scene: Scene, map: MapRenderer): PreviewPlay
       disposed = true;
       pause();
       root.remove();
+      canvas.remove();
+      bar.remove();
     },
   };
 }

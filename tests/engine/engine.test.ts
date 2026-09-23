@@ -231,7 +231,7 @@ describe('hud', () => {
   it('부제는 현지 월 · km 내림 (UTC 로는 1월인 2월 1일 새벽)', () => {
     const t = Date.UTC(2026, 0, 31, 20, 0); // = 2026-02-01 05:00 KST
     expect(subtitleText(t, 540, 2187.9)).toBe('2026년 2월 · 2,187 km');
-    expect(titleText(2026, '홍길동')).toBe('2026년 홍길동의 타임라인');
+    expect(titleText(2026, 2026, '홍길동')).toBe('2026년 홍길동의 타임라인');
     expect(HUD_GLYPHS).toContain('·');
   });
 });

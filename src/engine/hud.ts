@@ -32,7 +32,9 @@ export function localYearMonth(t: number, tzMin: number): { year: number; month:
   return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 };
 }
 
-export const titleText = (year: number, name: string) => `${year}년 ${name}의 타임라인`;
+/** `{YYYY}년 {이름}의 타임라인` — 기간이 해를 넘으면 `{YYYY}–{YYYY}년` (O-05 → D-32, en dash) */
+export const titleText = (yearFrom: number, yearTo: number, name: string) =>
+  `${yearFrom === yearTo ? yearFrom : `${yearFrom}–${yearTo}`}년 ${name}의 타임라인`;
 
 /** `{YYYY}년 {M}월 · {km} km` — km 은 내림 정수 (레퍼런스: 시작 0 km) */
 export function subtitleText(t: number, tzMin: number, km: number): string {

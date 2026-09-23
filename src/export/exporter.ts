@@ -32,6 +32,8 @@ export type ExportOptions = {
   scene: Scene;
   signal?: AbortSignal;
   onProgress?: (p: ExportProgress) => void;
+  /** 방금 그린 프레임 (화면에 실시간으로 보여주기용 — 캔버스를 복사만 할 것) */
+  onFrame?: (canvas: HTMLCanvasElement, frame: number) => void;
   /** 테스트·다른 제공자용 주입 (기본: createMapLayer — 매번 새 인스턴스) */
   createMap?: (width: number, height: number) => Promise<MapRenderer>;
 };
@@ -72,6 +74,7 @@ export async function exportMp4(o: ExportOptions): Promise<ExportResult> {
       } catch (e) {
         throw new ExportError('MAP_TIMEOUT', e);
       }
+      o.onFrame?.(canvas, i);
       try {
         await source.add(i / FPS, 1 / FPS); // 백프레셔
       } catch (e) {

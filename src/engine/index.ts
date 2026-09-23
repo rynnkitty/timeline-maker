@@ -7,3 +7,4 @@ export * from './camera.ts';
 export * from './trail.ts';
 export * from './hud.ts';
 export * from './frame.ts';
+export * from './themes.ts';

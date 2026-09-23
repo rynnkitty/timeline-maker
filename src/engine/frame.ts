@@ -40,7 +40,8 @@ export type Scene = {
 export function buildScene(track: Track, o: SceneOptions): Scene {
   if (track.n === 0) throw new Error('empty track');
   const timeline = makeTimeline(track.pace[track.n - 1], o.animS);
-  const { year } = localYearMonth(track.t[0], track.tz[0]);
+  const y0 = localYearMonth(track.t[0], track.tz[0]).year;
+  const y1 = localYearMonth(track.t[track.n - 1], track.tz[track.n - 1]).year;
   return {
     track,
     timeline,
@@ -48,7 +49,7 @@ export function buildScene(track: Track, o: SceneOptions): Scene {
     width: o.width,
     height: o.height,
     s: o.width / 480,
-    title: titleText(year, o.name),
+    title: titleText(y0, y1, o.name),
     theme: o.theme ?? GREEN,
     hud: o.hud ?? HUD,
   };

@@ -5,3 +5,4 @@ export { RESOLUTIONS, ANIM_LENGTHS, type Resolution } from './options.ts';
 export { checkExportSupport, type ExportSupport } from './support.ts';
 export { ExportError, exportMp4, type ExportErrorCode, type ExportOptions, type ExportProgress, type ExportResult } from './exporter.ts';
 export { downloadBlob } from './download.ts';
+export { estimateExportSeconds } from './estimate.ts';
