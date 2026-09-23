@@ -14,6 +14,7 @@ export default mergeConfig(
         input: {
           map: resolve(import.meta.dirname, 'map/index.html'),
           encode: resolve(import.meta.dirname, 'encode/index.html'),
+          parse: resolve(import.meta.dirname, 'parse/index.html'),
         },
       },
     },
