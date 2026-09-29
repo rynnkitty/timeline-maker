@@ -59,6 +59,10 @@
 
 이동 경로는 `timelinePath` 기록만 쓰고, 영상은 **누적 이동 거리에 비례**해 진행합니다 (km 카운터가 일정한 속도로 늘어납니다). 설계·측정 기록은 [`docs/`](docs/) 에 있습니다.
 
+## 제작 과정
+
+이 사이트는 Claude Code 에이전트로 만들었습니다. 첫 프롬프트부터 인터뷰, Phase 별 진행, GitHub Pages 배포까지의 과정과 다음 프로젝트를 더 효율적으로 하는 방법은 [`docs/making-of-guide.md`](docs/making-of-guide.md) 에 정리했습니다. 에이전트 문서는 [`CLAUDE.md`](CLAUDE.md) 와 [`.claude/agents/timeline-maker.md`](.claude/agents/timeline-maker.md) 입니다.
+
 ## 로컬 개발
 
 Node.js 22.18 이상이 필요합니다.
