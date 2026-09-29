@@ -2,6 +2,7 @@
 
 > 세션 간 연속성의 SSOT (`CLAUDE.md` §1). Task 완료마다 **현황 · 다음 명령 · 미해결·Carry-over** 를 갱신한다.
 > Phase 절차·DoD 원문은 `.claude/agents/timeline-maker.md` §3. 규칙·결정은 `CLAUDE.md`.
+> ※ 아래 표·기록의 커밋 해시는 **2026-09-28 이력 재작성(D-35) 이전 값**이라 현재 이력과 맞지 않는다.
 > ※ `CLAUDE.md`·`.claude/` 는 **로컬 전용 개발 설정**이라 공개 저장소에 없다 (2026-09-28 사용자 결정). 이 문서의 해당 경로 참조는 로컬 작업용이다.
 
 ## 현황
@@ -14,14 +15,13 @@
 | 3 | 애니메이션 엔진 | ✅ 완료 (main `2d1f558` 머지) | 2026-09-23 |
 | 4 | MP4 내보내기 | ✅ 완료 (main `cacecb7` 머지) | 2026-09-23 |
 | 5 | UI/UX | ✅ 완료 (main `4583c76` 머지) | 2026-09-23 |
-| 6 | 배포 | 🟡 **로컬 완료** (`feat/phase-6` → main) · 원격(저장소·push·Pages)은 **사용자 `gh auth login` 대기** | |
+| 6 | 배포 | ✅ 완료 — **https://rynnkitty.github.io/timeline-maker/** (Actions 성공 · 라이브 전 흐름 검증) | 2026-09-29 |
 
 ## 다음 세션 명령
 
 ```
-(사용자) ! gh auth login   ← 브라우저 인증. 토큰을 파일·대화에 붙여 넣지 않는다 (D-21)
-timeline-maker 에이전트로 Phase 6 원격 단계를 진행하라 (D-23 사전 승인 범위: rynnkitty/timeline-maker 생성·push·Pages).
-절차는 아래 "Phase 6 원격 실행 절차" 그대로. (C-23 해소 — 이력 재작성 완료, 바로 1) 부터 진행)
+모드 A 전 Phase 완료 (2026-09-29). 이후 요청은 timeline-maker 에이전트 모드 B(기능 추가)·C(유지보수).
+남은 위험: C-9(Firefox·Safari·모바일 실기기) · C-14(iOS 실파일) · C-7(라벨 서체) · C-11(번들 크기).
 ```
 
 ---
@@ -99,15 +99,17 @@ DoD: 15 s × 3 해상도 **396프레임·24 fps·H.264·오디오 없음·레벨
 
 DoD: 전 흐름 스크린샷(데스크톱 6 · 모바일 2) ✅ · 오류 7종 재현 ✅ · 외부 요청 = 타일 제공자뿐 · CSP 위반 0 ✅ · test/lint/build ✅
 
-## Phase 6 — 배포 (로컬 ✅ · 원격 대기)
+## Phase 6 — 배포 ✅
 
 - [x] 6-1 `README.md` (소개·URL·스크린샷·사용법·Timeline.json 내보내기(iPhone 베타)·개인정보(= `ko.privacy`)·지원 브라우저·기술·로컬 개발·attribution·라이선스)
 - [x] 6-2 `LICENSE` MIT + `public/licenses/`(MapLibre BSD-3 · Mediabunny MPL-2.0 · Noto Sans KR OFL) — D-34
 - [x] 6-3 push 직전 점검 (로컬): 추적 151개 privacy-check OK · 금지 경로 0 · **전체 이력**(커밋 33·경로 152·diff 88,363줄) 좌표 패턴 0 · 토큰(`ghp_` 등) 0 · 커밋 메시지 0
 - [x] 6-4 `deploy.yml` 점검 · 새 `npm ci` → test 83/83 → build: dist 507개 파일 **바이트 동일** (재현성)
 - [x] 6-5 `vite preview`(base `/timeline-maker/`) 전 흐름: 드롭→미리보기→내보내기→다운로드, 오류 7종, 로컬 자산 요청 106건 중 404(가려진 것 포함) 0 · CSP 위반 0
-- [ ] 6-6 **원격** — 사용자 `gh auth login` 후 아래 절차
-- [ ] 6-7 라이브 URL 검증 · README 링크 확인
+- [x] 6-6 **원격** (2026-09-29): `gh repo create rynnkitty/timeline-maker --public` → Pages `build_type=workflow`(API, push 전 활성화) → `git push -u origin main`. 첫 Actions 실행 성공(install → privacy-check → test → build → deploy 전 단계 success). 토큰은 저장하지 않음(일회성 credential helper, git 설정·remote URL 무기록 확인)
+- [x] 6-7 라이브 URL 검증: `/`·`og.png`·`favicon.svg`·`sample-frame.png`·라이선스 3종 200 · `check-flow.ts` 라이브 실행 — 드롭→미리보기→내보내기(4.8 MB·8.3 s)→다운로드 성공, 오류 7종 재현, **httpErrors 0 · CSP 위반 0 · 페이지 오류 0**, 외부 호스트 = CARTO 뿐. 라이브에서 받은 MP4 `video-check.py` 5/5 PASS(480×854·24 fps·396·H.264 L3.0·오디오 없음). README 라이선스 안내를 파일 링크로 수정(디렉터리 URL 은 404)
+
+DoD: Actions 성공 ✅ · 배포 URL 200 ✅ · 배포 URL 에서 전 흐름 ✅ · 자산 404 0 ✅
 
 ### Phase 6 원격 실행 절차 (인증 후 · 순서대로)
 
@@ -191,6 +193,7 @@ node spikes/ui/check-flow.ts https://rynnkitty.github.io/timeline-maker/ --no-sh
 |---|---|
 | 2026-09-23 | Phase 1 종료 — O-01→D-19, O-02→D-20 사용자 확정, `feat/phase-1` → `main` 머지 |
 | 2026-09-23 | Phase 2 종료 — O-04→D-22 사용자 확정, `feat/phase-2` → `main` 머지 |
+| 2026-09-29 | **Phase 6 완료 — 배포** `https://rynnkitty.github.io/timeline-maker/`. 저장소 생성·Pages(Actions)·push, 라이브 전 흐름·MP4 검증. 모드 A 종료 |
 | 2026-09-28 | C-23 해소 — 이력 재작성(작성자 noreply · 도메인 문자열 치환 · Claude 개발 설정 이력 제거·로컬 전용화). 원격 단계는 `gh auth login` 대기 |
 | 2026-09-23 | Phase 6 (로컬) — README·LICENSE·D-34, 전체 이력 점검, 빌드 재현성, preview 전 흐름. 원격 절차 기록. C-23 추가 |
 | 2026-09-23 | Phase 5 — 제품 화면·CSP·OG, D-32·D-33 (O-05~O-07 확정). C-12·C-17~C-20 해소 |

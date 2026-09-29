@@ -84,4 +84,4 @@ npm run privacy-check  # 커밋된 파일에 실제 좌표 형태의 숫자가 �
 - 글꼴: Noto Sans KR — SIL Open Font License 1.1
 - 라이브러리: MapLibre GL JS — BSD-3-Clause · Mediabunny — MPL-2.0 (수정 없이 사용)
 
-서드파티 라이선스 원문은 [`public/licenses/`](public/licenses/) 에 있고, 사이트에서도 `/timeline-maker/licenses/` 로 제공됩니다.
+서드파티 라이선스 원문은 [`public/licenses/`](public/licenses/) 에 있고, 사이트에서도 제공됩니다: [MapLibre GL JS](https://rynnkitty.github.io/timeline-maker/licenses/maplibre-gl-BSD-3-Clause.txt) · [Mediabunny](https://rynnkitty.github.io/timeline-maker/licenses/mediabunny-MPL-2.0.txt) · [Noto Sans KR](https://rynnkitty.github.io/timeline-maker/licenses/noto-sans-kr-OFL-1.1.txt).
