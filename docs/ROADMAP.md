@@ -2,6 +2,7 @@
 
 > 세션 간 연속성의 SSOT (`CLAUDE.md` §1). Task 완료마다 **현황 · 다음 명령 · 미해결·Carry-over** 를 갱신한다.
 > Phase 절차·DoD 원문은 `.claude/agents/timeline-maker.md` §3. 규칙·결정은 `CLAUDE.md`.
+> ※ `CLAUDE.md`·`.claude/` 는 **로컬 전용 개발 설정**이라 공개 저장소에 없다 (2026-09-28 사용자 결정). 이 문서의 해당 경로 참조는 로컬 작업용이다.
 
 ## 현황
 
@@ -20,7 +21,7 @@
 ```
 (사용자) ! gh auth login   ← 브라우저 인증. 토큰을 파일·대화에 붙여 넣지 않는다 (D-21)
 timeline-maker 에이전트로 Phase 6 원격 단계를 진행하라 (D-23 사전 승인 범위: rynnkitty/timeline-maker 생성·push·Pages).
-절차는 아래 "Phase 6 원격 실행 절차" 그대로. 커밋 이메일 공개 여부(C-23)를 먼저 사용자에게 확인.
+절차는 아래 "Phase 6 원격 실행 절차" 그대로. (C-23 해소 — 이력 재작성 완료, 바로 1) 부터 진행)
 ```
 
 ---
@@ -113,7 +114,7 @@ DoD: 전 흐름 스크린샷(데스크톱 6 · 모바일 2) ✅ · 오류 7종 �
 ```bash
 # 0) 인증·계정 확인 — 로그인 계정이 rynnkitty 인지
 gh auth status
-# (C-23 결정에 따라) 커밋 이메일을 GitHub noreply 로 바꿀지 — 바꾼다면 push 전에만 가능 (이력 재작성)
+# (C-23 해소 2026-09-28) 이력 재작성 완료: 작성자 = noreply, CLAUDE.md·.claude/ 이력에서 제거
 
 # 1) 공개 저장소 생성 + origin 연결 (아직 push 하지 않음)
 gh repo create rynnkitty/timeline-maker --public   --description "구글 타임라인 파일로 이동 경로 세로 영상(MP4)을 만드는 웹사이트 — 파일은 업로드되지 않습니다"   --homepage "https://rynnkitty.github.io/timeline-maker/"   --source . --remote origin
@@ -173,7 +174,7 @@ node spikes/ui/check-flow.ts https://rynnkitty.github.io/timeline-maker/ --no-sh
 | ~~C-19~~ ✅ | 예상 소요 시간 | — | 시작 전 "약 N초" (25 ms/프레임 + 1 s) | 5 |
 | ~~C-20~~ ✅ | 내보내기 중 WebGL 컨텍스트 2개 | — | 미리보기 지도 해제 → 1개 (검증) | 5 |
 | C-21 | 가려진 탭에서 누른 취소는 다시 보일 때 반영 (abort 검사는 프레임 루프 선두, idle 대기는 보이는 시간만 셈) | 낮음 — 가려진 탭에선 버튼을 누를 수 없음 | Phase 5 UX 메모 (필요하면 idle 대기에 AbortSignal 연결) | 5 |
-| C-23 | **커밋 작성자 이메일이 회사 도메인 주소**(커밋 33개 전부) — 공개 저장소에 노출됨 | 중간 — 개인정보 | 사용자 결정 필요: (a) 그대로 공개 (b) push **전에** GitHub noreply 주소로 이력 재작성 후 push. 이메일은 바꾸지 않았다 | 6 |
+| ~~C-23~~ ✅ | 커밋 작성자 이메일이 회사 도메인 주소 | — | **해소 2026-09-28** (사용자 결정 (b)): push 전 `git filter-repo` 로 전체 이력 재작성 — 작성자·커미터 = GitHub noreply, 이력 속 도메인 문자열 치환, 저장소 `user.email` = noreply. 동시에 `CLAUDE.md`·`.claude/` 를 이력에서 제거하고 gitignore·privacy-check 금지 경로에 추가(공개 범위 = 전부 비공개). 재작성 전 bundle 백업 보관 | 6 |
 | ~~C-5~~ ✅ | Phase 0 산출물 미커밋 | — | main `1d76d3b` 로 커밋 (2026-09-23) | 1 |
 | C-7 | 라벨 서체 굵기·크기·점 표기가 레퍼런스(래스터 추정)와 약간 다름 | 낮음 | 라벨 배율 k 1.35 · 대문자 경계 조정 적용(D-27). 잔여는 수용 — 필요 시 Phase 5 이후 | 5+ |
 | ~~C-8~~ ✅ | 지도 출력이 카메라 이력에 의존 | — | 내보내기 2회(새 프로필) 396/396 픽셀 동일, 탭 가림 후 재개도 동일 (Phase 4) | 4 |
@@ -190,6 +191,7 @@ node spikes/ui/check-flow.ts https://rynnkitty.github.io/timeline-maker/ --no-sh
 |---|---|
 | 2026-09-23 | Phase 1 종료 — O-01→D-19, O-02→D-20 사용자 확정, `feat/phase-1` → `main` 머지 |
 | 2026-09-23 | Phase 2 종료 — O-04→D-22 사용자 확정, `feat/phase-2` → `main` 머지 |
+| 2026-09-28 | C-23 해소 — 이력 재작성(작성자 noreply · 도메인 문자열 치환 · Claude 개발 설정 이력 제거·로컬 전용화). 원격 단계는 `gh auth login` 대기 |
 | 2026-09-23 | Phase 6 (로컬) — README·LICENSE·D-34, 전체 이력 점검, 빌드 재현성, preview 전 흐름. 원격 절차 기록. C-23 추가 |
 | 2026-09-23 | Phase 5 — 제품 화면·CSP·OG, D-32·D-33 (O-05~O-07 확정). C-12·C-17~C-20 해소 |
 | 2026-09-23 | Phase 4 — MP4 내보내기 파이프라인(D-31), MP4 재측정으로 진행 끝 f359·마커 축소 교정, 탭 가림 대응. C-8·C-10 해소, C-18~C-21 추가 |
