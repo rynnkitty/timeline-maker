@@ -57,7 +57,7 @@
 | 테스트 | Vitest · 영상 검증은 Python + OpenCV (`scripts/video-check.py`) |
 | 배포 | GitHub Actions → GitHub Pages |
 
-이동 경로는 `timelinePath` 기록만 쓰고, 영상은 **누적 이동 거리에 비례**해 진행합니다 (km 카운터가 일정한 속도로 늘어납니다). 설계 결정은 [`CLAUDE.md`](CLAUDE.md), 측정 기록은 [`docs/`](docs/) 에 있습니다.
+이동 경로는 `timelinePath` 기록만 쓰고, 영상은 **누적 이동 거리에 비례**해 진행합니다 (km 카운터가 일정한 속도로 늘어납니다). 설계·측정 기록은 [`docs/`](docs/) 에 있습니다.
 
 ## 로컬 개발
 

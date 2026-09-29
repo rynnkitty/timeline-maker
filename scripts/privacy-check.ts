@@ -4,7 +4,7 @@
  *   node scripts/privacy-check.ts            staged 파일 검사 (pre-commit 훅이 호출)
  *   node scripts/privacy-check.ts --all      추적 중인 전체 파일 검사 (push 전 점검)
  *
- * 1) 금지 경로: ref/ · docs/reference/ · Timeline*.json · Records.json · .claude/settings.local.json
+ * 1) 금지 경로: ref/ · docs/reference/ · Timeline*.json · Records.json · CLAUDE.md · .claude/ (로컬 전용 개발 설정)
  *    (tests/fixtures/ 의 합성 픽스처는 예외)
  * 2) 숫자 좌표 패턴: `\d{1,3}\.\d{4,}°` · `geo:-?\d+\.\d{4,}` — tests/fixtures/ · scripts/make-fixtures.ts 예외
  *
@@ -19,7 +19,8 @@ const FORBIDDEN_PATHS: [RegExp, string][] = [
   [/^docs\/reference\//, 'docs/reference/ (기준 프레임 · 실파일 집계)'],
   [/(^|\/)[Tt]imeline[^/]*\.json$/, 'Timeline*.json (실파일 추정)'],
   [/(^|\/)Records\.json$/, 'Records.json (구 Takeout)'],
-  [/^\.claude\/settings\.local\.json$/, '.claude/settings.local.json'],
+  [/^CLAUDE\.md$/, 'CLAUDE.md (로컬 전용 개발 설정)'],
+  [/^\.claude\//, '.claude/ (로컬 전용 개발 설정)'],
 ];
 const PATH_EXEMPT = /^tests\/fixtures\//;
 
