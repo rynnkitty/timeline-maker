@@ -3,7 +3,7 @@
 > 세션 간 연속성의 SSOT (`CLAUDE.md` §1). Task 완료마다 **현황 · 다음 명령 · 미해결·Carry-over** 를 갱신한다.
 > Phase 절차·DoD 원문은 `.claude/agents/timeline-maker.md` §3. 규칙·결정은 `CLAUDE.md`.
 > ※ 아래 표·기록의 커밋 해시는 **2026-09-28 이력 재작성(D-35) 이전 값**이라 현재 이력과 맞지 않는다.
-> ※ `CLAUDE.md`·`.claude/` 는 **로컬 전용 개발 설정**이라 공개 저장소에 없다 (2026-09-28 사용자 결정). 이 문서의 해당 경로 참조는 로컬 작업용이다.
+> ※ `CLAUDE.md`·`.claude/` 는 2026-09-28 비공개로 이력에서 제거했다가, **2026-09-29 사용자 결정으로 다시 공개**했다(유사 에이전트 제작 참고용). 그래서 2026-09-29 이전 이력에는 두 경로가 없다.
 
 ## 현황
 
@@ -193,6 +193,7 @@ node spikes/ui/check-flow.ts https://rynnkitty.github.io/timeline-maker/ --no-sh
 |---|---|
 | 2026-09-23 | Phase 1 종료 — O-01→D-19, O-02→D-20 사용자 확정, `feat/phase-1` → `main` 머지 |
 | 2026-09-23 | Phase 2 종료 — O-04→D-22 사용자 확정, `feat/phase-2` → `main` 머지 |
+| 2026-09-29 | `CLAUDE.md`·`.claude/`(에이전트·스킬·agent-memory) 공개로 전환 (사용자 결정, D-36 번복) — gitignore·privacy-check 조정, 공개 전 민감정보 스캔 0건 |
 | 2026-09-29 | **Phase 6 완료 — 배포** `https://rynnkitty.github.io/timeline-maker/`. 저장소 생성·Pages(Actions)·push, 라이브 전 흐름·MP4 검증. 모드 A 종료 |
 | 2026-09-28 | C-23 해소 — 이력 재작성(작성자 noreply · 도메인 문자열 치환 · Claude 개발 설정 이력 제거·로컬 전용화). 원격 단계는 `gh auth login` 대기 |
 | 2026-09-23 | Phase 6 (로컬) — README·LICENSE·D-34, 전체 이력 점검, 빌드 재현성, preview 전 흐름. 원격 절차 기록. C-23 추가 |

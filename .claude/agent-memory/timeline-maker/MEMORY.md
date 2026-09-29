@@ -1,0 +1,2 @@
+- [Privacy boundaries](project_privacy_boundaries.md) — ref video header has a real name (never transcribe); committed docs = schema+scale, detailed aggregates gitignored
+- [Windows background servers](project_windows_background_servers.md) — TaskStop leaves node vite alive on its port; find PID via Get-NetTCPConnection and Stop-Process
